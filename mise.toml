@@ -1,0 +1,6 @@
+[tools]
+docker-compose = "5"
+node = "24"
+pnpm = "11"
+python = "3"
+uv = "latest"
