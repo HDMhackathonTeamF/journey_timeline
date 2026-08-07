@@ -33,8 +33,8 @@ cd frontend # frontendのフォルダに入る
 pnpm run dev # サーバの起動
 ```
 #### バックエンド側の起動
-まだ整備中．uvがあるので以下になるかも
 ```sh
 cd backend # backendのフォルダに入る
-uv run backend
+uv sync
+uv run fastapi dev
 ```
