@@ -7,7 +7,9 @@ authors = [
     { name = "yuyake-litrain", email = "85449119+yuyake-litrain@users.noreply.github.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastapi[standard]>=0.141.1",
+]
 
 [project.scripts]
 backend = "backend:main"
