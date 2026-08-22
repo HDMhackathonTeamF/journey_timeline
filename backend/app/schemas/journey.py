@@ -10,6 +10,9 @@ class JourneyBase(BaseModel):
 class JourneyCreate(JourneyBase):
     password: Optional[str] = None
 
+class JourneyUpdate(BaseModel):
+    title: str
+
 class JourneyResponse(BaseModel):
     id: UUID
     title: str

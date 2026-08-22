@@ -28,7 +28,10 @@ export const apiJourneyRepository: JourneyRepository = {
     if (password) await verifyJourney(created.id, password)
     return { ...created, items: created.items ?? [] }
   },
-  updateJourney: (id, title) => request<Journey>(`/journeys/${id}`, { method: 'PATCH', body: JSON.stringify({ title }) }),
+  updateJourney: async (id, title) => {
+    await request(`/journeys/${id}`, { method: 'PATCH', headers: authHeaders(id), body: JSON.stringify({ title }) })
+    return request<Journey>(`/journeys/${id}`, { headers: authHeaders(id) })
+  },
   deleteJourney: (id) => request<void>(`/journeys/${id}`, { method: 'DELETE' }),
   createEvent: (journeyId, input, index) => request<TimelineItem>(`/journeys/${journeyId}/items`, { method: 'POST', body: JSON.stringify({ ...itemPayload(input), order_index: index }) }),
   createTransit: (journeyId, input, index) => request<TimelineItem>(`/journeys/${journeyId}/items`, { method: 'POST', body: JSON.stringify({ ...transitPayload(input), order_index: index }) }),

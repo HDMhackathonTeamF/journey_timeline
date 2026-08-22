@@ -8,7 +8,7 @@ from app.core.security import get_password_hash, verify_password, create_access_
 from app.core.limiter import limiter
 from app.models.journey import Journey
 from app.models.timeline_item import TimelineItem
-from app.schemas.journey import JourneyCreate, JourneyResponse, JourneyVerifyRequest, TokenResponse
+from app.schemas.journey import JourneyCreate, JourneyResponse, JourneyUpdate, JourneyVerifyRequest, TokenResponse
 from app.schemas.timeline_item import JourneyWithItemsResponse
 
 router = APIRouter(prefix="/api/v1/journeys", tags=["Journeys"])
@@ -103,4 +103,29 @@ async def verify_journey_password(
         
     access_token = create_access_token(subject=str(db_journey.id))
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.patch("/{journey_id}", response_model=JourneyResponse)
+async def update_journey(
+    journey_id: str,
+    journey_in: JourneyUpdate,
+    authorization: Optional[str] = Header(None),
+    db: AsyncSession = Depends(get_db),
+):
+    db_journey = await db.get(Journey, journey_id)
+    if not db_journey:
+        raise HTTPException(status_code=404, detail="Journey not found")
+
+    if db_journey.is_protected:
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Authentication required")
+        subject = verify_access_token(authorization.removeprefix("Bearer "))
+        if subject != str(db_journey.id):
+            raise HTTPException(status_code=403, detail="Invalid or expired token")
+
+    db_journey.title = journey_in.title.strip()
+    if not db_journey.title:
+        raise HTTPException(status_code=422, detail="Title is required")
+    await db.commit()
+    await db.refresh(db_journey)
+    return db_journey
 
