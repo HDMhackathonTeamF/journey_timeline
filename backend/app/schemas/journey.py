@@ -57,23 +57,22 @@ class JourneyUpdate(BaseModel):
 class EditSessionCreate(BaseModel):
     password: str = Field(min_length=1, max_length=255)
 
+class JourneyCreate(JourneyBase):
+    password: Optional[str] = None
 
 class JourneyResponse(BaseModel):
     id: UUID
     title: str
     created_at: datetime
     updated_at: datetime
-    items: list[ItemResponse]
+    is_protected: bool = False
+    # Note: edit_token is omitted from response for security
 
+    model_config = ConfigDict(from_attributes=True)
 
-class JourneySummary(BaseModel):
-    id: UUID
-    title: str
-    start_date: datetime | None
-    end_date: datetime | None
-    updated_at: datetime
-    item_count: int
+class JourneyVerifyRequest(BaseModel):
+    password: str
 
-
-class ReorderRequest(BaseModel):
-    item_ids: list[UUID]
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"

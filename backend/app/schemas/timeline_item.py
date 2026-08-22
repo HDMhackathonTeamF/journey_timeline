@@ -61,6 +61,7 @@ class JourneyWithItemsResponse(BaseModel):
     title: str
     created_at: datetime
     updated_at: datetime
+    is_protected: bool = False
     items: list[TimelineItemResponse] = []
     
     model_config = ConfigDict(from_attributes=True)
