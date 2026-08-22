@@ -1,11 +1,15 @@
 .timelineLine::before {
   left: 29px;
-  width: 2px;
+  width: 3px;
   background: #aeb3b8;
 }
 
 .editingTimeline::before {
   bottom: 27px;
+}
+
+.viewingTimeline .itemWrap {
+  margin-bottom: 14px;
 }
 
 .referenceCard {
@@ -27,12 +31,16 @@
   top: 0;
   bottom: 0;
   left: 28px;
-  width: 2px;
+  width: 3px;
   background: #aeb3b8;
 }
 
 .itemWrap:first-child .referenceCard::before {
   top: 18px;
+}
+
+.itemWrap:first-child .referenceCard:has(.transitSummary)::before {
+  top: 33px;
 }
 
 .itemWrap:last-child .referenceCard::before {
@@ -214,6 +222,14 @@
   font-size: 14px;
 }
 
+.timelineRow:has(.transitSummary) .rowBody {
+  padding-top: 0;
+}
+
+.timelineRow:has(.transitSummary):not(:has(.transferTimes)) .timeAndMarker {
+  padding-top: 15px;
+}
+
 .rowBody small,
 .rideRow small,
 .durationRow small {
@@ -224,6 +240,10 @@
 .durationRow,
 .rideRow {
   min-height: 24px;
+}
+
+.rideRow {
+  padding: 3px 0;
 }
 
 .durationRow i,
@@ -242,6 +262,8 @@
   flex-direction: column;
   gap: 2px;
   padding: 3px 0 5px;
+  padding-left: 10px;
+  border-left: 1.5px solid #7f868c;
 }
 
 .rideRow b {
@@ -254,7 +276,7 @@
   z-index: 2;
   align-self: center;
   justify-self: center;
-  transform: translateY(-6px);
+  transform: none;
   min-width: 40px;
   padding: 5px 8px;
   border-radius: 7px;
@@ -268,7 +290,7 @@
 }
 
 .travelDurationBeforeTransfer {
-  transform: translateY(-16px);
+  transform: none;
 }
 
 .travelDuration::before,
@@ -276,7 +298,7 @@
   content: '';
   position: absolute;
   left: 50%;
-  width: 2px;
+  width: 3px;
   height: 8px;
   background: #aeb3b8;
   transform: translateX(-50%);
@@ -310,12 +332,12 @@
 }
 
 .timelineRow:has(.transferTimes) .rowBody {
-  padding-top: 18px;
+  padding-top: 0;
   transform: none;
 }
 
 .timelineRow:has(.transferTimes) {
-  margin-top: -16px;
+  margin-top: 0;
   margin-bottom: 0;
 }
 

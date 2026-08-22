@@ -75,7 +75,7 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
         <section className={styles.timelinePane}>
           <div className={styles.paneHeading}><div><p className={styles.sectionLabel}>ITINERARY</p><h1><button className={panelStyles.journeyTitleButton} type="button" onClick={() => setEditor({ type: 'journey' })}>{journey.title}</button></h1></div><span>{journey.items.length} stops</span></div>
           {groups.length === 0 ? <div className={styles.emptyTimeline}><span>○</span><h2>まだ予定がありません</h2><p>旅の最初の目的地を追加しましょう。</p>{isEditing && <button type="button" onClick={() => setEditor({ type: 'event' })}>予定を追加する</button>}</div> : groups.map((group) => (
-            <section className={styles.day} key={group.key}><h2>{group.label}</h2><div className={`${styles.timelineLine} ${timelineStyles.timelineLine} ${isEditing ? timelineStyles.editingTimeline : ''}`}>{group.items.map((item) => (
+            <section className={styles.day} key={group.key}><h2>{group.label}</h2><div className={`${styles.timelineLine} ${timelineStyles.timelineLine} ${isEditing ? timelineStyles.editingTimeline : timelineStyles.viewingTimeline}`}>{group.items.map((item) => (
               <div className={`${styles.itemWrap} ${timelineStyles.itemWrap}`} key={item.id}>
                 <TimelineCard item={item} selected={selectedItem?.id === item.id} onClick={() => setEditor(isEditing ? { type: item.item_type, itemId: item.id } : { type: 'detail', itemId: item.id })} />
                 {isEditing && <div className={styles.itemControls}><button type="button" aria-label="上へ移動" disabled={item.order_index === 0 || busy} onClick={async () => { setBusy(true); await journeyRepository.moveItem(journey.id, item.id, -1); await refresh(); setBusy(false) }}>↑</button><button type="button" aria-label="下へ移動" disabled={item.order_index === journey.items.length - 1 || busy} onClick={async () => { setBusy(true); await journeyRepository.moveItem(journey.id, item.id, 1); await refresh(); setBusy(false) }}>↓</button><button type="button" aria-label="この後に追加" onClick={() => setEditor({ type: 'event', index: item.order_index + 1 })}>＋</button></div>}
@@ -130,7 +130,7 @@ function TimelineCard({ item, selected, onClick }: { item: TimelineItem; selecte
     <button type="button" className={`${styles.timelineCard} ${styles.transitCard} ${timelineStyles.referenceCard} ${selected ? styles.selected : ''}`} onClick={onClick}>
       <span className={timelineStyles.timelineRow}>
         <span className={timelineStyles.timeAndMarker}><time>{formatTime(firstLeg?.departure_time ?? item.start_time)}</time><span className={timelineStyles.transitMarker}><TrainIcon /></span></span>
-        <span className={timelineStyles.rowBody}><strong>{firstLeg?.from_station ?? item.transit.departure_location}</strong><small>{route.duration_minutes}分 · ¥{route.total_fare} · 乗換{route.transfers_count}回</small></span>
+        <span className={timelineStyles.rowBody}><small className={timelineStyles.transitSummary}>{route.duration_minutes}分 · ¥{route.total_fare} · 乗換{route.transfers_count}回</small><strong>{firstLeg?.from_station ?? item.transit.departure_location}</strong></span>
       </span>
       {route.legs.map((leg, index) => {
         const nextLeg = route.legs[index + 1]
@@ -140,7 +140,7 @@ function TimelineCard({ item, selected, onClick }: { item: TimelineItem; selecte
           <span className={timelineStyles.rideRow}><span className={`${timelineStyles.travelDuration} ${nextLeg ? timelineStyles.travelDurationBeforeTransfer : ''}`}>{travelMinutes}m</span><i /><span><b>{formatTransitLineName(leg.line_name)}</b><small>{leg.from_station} → {leg.to_station}{leg.platform ? ` · ${leg.platform}` : ''}</small></span></span>
           <span className={timelineStyles.timelineRow}>
             <span className={timelineStyles.timeAndMarker}><time className={nextLeg ? timelineStyles.transferTimes : ''}><span>{formatTime(leg.arrival_time)}</span>{nextLeg && <span>{formatTime(nextLeg.departure_time)}</span>}</time><span className={timelineStyles.transitMarker}><TrainIcon /></span></span>
-            <span className={timelineStyles.rowBody}><strong>{leg.to_station}{nextLeg ? 'で乗り換え' : ''}</strong><small>{nextLeg ? `乗換 ${waitMinutes}分` : '到着'}</small></span>
+            <span className={timelineStyles.rowBody}>{nextLeg && <small className={timelineStyles.transitSummary}>乗換 {waitMinutes}分</small>}<strong>{leg.to_station}{nextLeg ? 'で乗り換え' : ''}</strong>{!nextLeg && <small>到着</small>}</span>
           </span>
         </span>
       })}
