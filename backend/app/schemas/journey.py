@@ -8,13 +8,21 @@ class JourneyBase(BaseModel):
     edit_token: Optional[str] = None
 
 class JourneyCreate(JourneyBase):
-    pass
+    password: Optional[str] = None
 
 class JourneyResponse(BaseModel):
     id: UUID
     title: str
     created_at: datetime
     updated_at: datetime
+    is_protected: bool = False
     # Note: edit_token is omitted from response for security
 
     model_config = ConfigDict(from_attributes=True)
+
+class JourneyVerifyRequest(BaseModel):
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
