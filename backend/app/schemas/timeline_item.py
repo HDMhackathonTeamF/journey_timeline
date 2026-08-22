@@ -25,6 +25,7 @@ class TransitBase(BaseModel):
     departure_location: str
     arrival_location: str
     transit_data: Optional[dict] = None
+    memo: Optional[str] = None
 
 class TransitCreate(TransitBase):
     pass

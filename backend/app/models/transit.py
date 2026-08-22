@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, String, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from app.core.database import Base
@@ -10,5 +10,6 @@ class Transit(Base):
     departure_location = Column(String(255), nullable=False)
     arrival_location = Column(String(255), nullable=False)
     transit_data = Column(JSONB, nullable=True)
+    memo = Column(Text, nullable=True)
 
     timeline_item = relationship("TimelineItem", back_populates="transit")
