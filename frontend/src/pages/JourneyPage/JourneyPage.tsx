@@ -64,7 +64,7 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
         <div className={styles.headerActions}>
           {!isEditing && <button type="button" onClick={() => setAuthOpen(true)}>編集する</button>}
           <button type="button" onClick={share}>↗ 共有</button>
-          <button type="button" onClick={() => navigate('/journeys/new')}>＋ 新しく作る</button>
+          <button type="button">＋ 書き出し</button>
         </div>
       </header>
 
