@@ -1,16 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from typing import Optional
 from app.core.database import get_db
 from app.core.security import get_password_hash, verify_password, create_access_token, verify_access_token
+from app.core.limiter import limiter
 from app.models.journey import Journey
 from app.models.timeline_item import TimelineItem
 from app.schemas.journey import JourneyCreate, JourneyResponse, JourneyVerifyRequest, TokenResponse
 from app.schemas.timeline_item import JourneyWithItemsResponse
 
 router = APIRouter(prefix="/api/v1/journeys", tags=["Journeys"])
+
 
 @router.post("", response_model=JourneyResponse, status_code=status.HTTP_201_CREATED)
 async def create_journey(journey_in: JourneyCreate, db: AsyncSession = Depends(get_db)):
@@ -64,7 +66,13 @@ async def get_journey(journey_id: str, authorization: Optional[str] = Header(Non
     }
 
 @router.post("/{journey_id}/verify", response_model=TokenResponse)
-async def verify_journey_password(journey_id: str, req: JourneyVerifyRequest, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def verify_journey_password(
+    request: Request,
+    journey_id: str,
+    req: JourneyVerifyRequest,
+    db: AsyncSession = Depends(get_db)
+):
     stmt = select(Journey).where(Journey.id == journey_id)
     result = await db.execute(stmt)
     db_journey = result.scalars().first()
@@ -81,3 +89,4 @@ async def verify_journey_password(journey_id: str, req: JourneyVerifyRequest, db
         
     access_token = create_access_token(subject=str(db_journey.id))
     return {"access_token": access_token, "token_type": "bearer"}
+
