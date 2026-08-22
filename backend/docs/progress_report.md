@@ -33,14 +33,30 @@
 - [x] `transit.py` の実装 (経路検索プロキシAPI)
 - [x] `main.py` へのルーター統合と CORS（フロントエンドからのアクセス許可）設定
 
+### Phase 6: 旅程のパスワード保護（公開/限定共有機能）
+- [x] パスワードのハッシュ化およびJWTトークン処理の実装 (`app/core/security.py`)
+- [x] `Journey` モデルへの `password_hash` カラムの追加とAlembicマイグレーション適用
+- [x] `JourneyCreate`, `JourneyResponse`, `JourneyVerifyRequest`, `TokenResponse` 等のPydanticスキーマ更新
+- [x] `journeys.py` APIの更新：
+  - 作成時のパスワードハッシュ化
+  - 取得時のJWT検証と、未認証時のデータ隠蔽（メタデータのみ返却）
+  - パスワード検証およびJWT発行用エンドポイント (`POST /api/v1/journeys/{id}/verify`) の追加
+
+### Phase 8: 本番環境対応（バックエンド単体対応）
+- [x] 本番用マルチステージ Dockerfile の作成 (`backend/Dockerfile`)
+- [x] レートリミッター (`slowapi`) の導入によるパスワード総当たり＆API過負荷防止
+- [x] 環境変数ベースの動的 CORS 設定および本番環境（`production`）切り替え対応
+- [x] 本番デプロイ対応事項一覧 (`backend/docs/required_actions.md`) の作成
+
 ## 動作確認結果
 - PostgreSQLコンテナが正常に起動し、テーブル構造が構築されていることを確認しました。
 - `fastapi dev` (または `uvicorn`) によるバックエンドサーバーの起動に成功しました。
-- ヘルスチェックエンドポイント (`/health`) で `{"status": "ok"}` が返却されることを確認済みです。
+- ヘルスチェックエンドポイント (`/health`) で `{"status": "ok", "environment": "development"}` が返却されることを確認済みです。
+- 新規追加したJWT・パスワード保護APIおよびレートリミッターが正常に稼働しています。
 - [Swagger UI (http://localhost:8000/docs)](http://localhost:8000/docs) が利用可能になっています。
 
 ## 次のステップ (Next Steps)
-バックエンドのベース機能は整いました。今後は以下の対応が想定されます：
-- フロントエンドとの疎通テストおよびAPIレスポンスの微調整
-- Transit API 連携時の細かなデータパースやエラーハンドリングの強化
-- （必要に応じて）ユニットテストの実装やバリデーションの追加
+バックエンド側のベース機能、外部連携、および本番対応が完了しました。今後は以下に進みます：
+- フロントエンド（React）側との連携：OpenAPI クライアント自動生成の実行とコンポーネント実装
+- クラウド選定およびインフラ・CI/CD環境のセットアップ（詳細は `required_actions.md` を参照）
+
