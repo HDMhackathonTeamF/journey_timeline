@@ -69,7 +69,7 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
       </header>
 
       <div className={`${styles.workspace} ${!isEditing ? styles.viewWorkspace : ''} ${!editor ? (isEditing ? panelStyles.noDetailWorkspace : panelStyles.viewNoDetailWorkspace) : ''}`}>
-        {isEditing && <aside className={styles.tools}><p className={styles.sectionLabel}>ADD TO PLAN</p><button type="button" onClick={() => setEditor({ type: 'event' })}><span>●</span> 予定を追加</button><button type="button" onClick={() => setEditor({ type: 'transit' })}><span>⇄</span> 移動を追加</button><div className={styles.toolBottom}><button type="button" onClick={() => setEditor({ type: 'journey' })}>旅程を編集</button><button className={styles.dangerText} type="button" onClick={deleteJourney}>旅程を削除</button></div></aside>}
+        {isEditing && <aside className={styles.tools}><p className={styles.sectionLabel}>ADD TO PLAN</p><button type="button" onClick={() => setEditor({ type: 'event' })}><span>●</span> 予定を追加</button><button type="button" onClick={() => setEditor({ type: 'transit' })}><span>⇄</span> 移動を追加</button><div className={styles.toolBottom}><button type="button" onClick={() => { setEditor(null); setIsEditing(false) }}>編集を終了</button><button className={styles.dangerText} type="button" onClick={deleteJourney}>旅程を削除</button></div></aside>}
 
         <section className={styles.timelinePane}>
           <div className={styles.paneHeading}><div><p className={styles.sectionLabel}>ITINERARY</p><h1><button className={panelStyles.journeyTitleButton} type="button" onClick={() => setEditor({ type: 'journey' })}>{journey.title}</button></h1></div><span>{journey.items.length} stops</span></div>
