@@ -1,4 +1,13 @@
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1').replace(/\/$/, '')
+const TOKEN_STORAGE_PREFIX = 'journey-access-token:'
+
+export function getJourneyAccessToken(journeyId: string): string | null {
+  return window.sessionStorage.getItem(`${TOKEN_STORAGE_PREFIX}${journeyId}`)
+}
+
+export function setJourneyAccessToken(journeyId: string, token: string): void {
+  window.sessionStorage.setItem(`${TOKEN_STORAGE_PREFIX}${journeyId}`, token)
+}
 
 export class ApiError extends Error {
   readonly status: number

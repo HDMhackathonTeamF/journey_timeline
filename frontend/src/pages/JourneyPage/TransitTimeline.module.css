@@ -77,3 +77,30 @@
 .transferRow small {
   color: var(--muted);
 }
+
+.routeOption {
+  display: block !important;
+}
+
+.routeOptionSummary {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.routeOption .transitLegs {
+  margin-top: 12px;
+  text-align: left;
+}
+
+.routeOption .transitLeg,
+.routeOption .legRoute,
+.routeOption .transferRow {
+  display: grid;
+}
+
+.routeOption .legTimes,
+.routeOption .transitLegGroup {
+  display: flex;
+}
