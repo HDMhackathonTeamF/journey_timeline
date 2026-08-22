@@ -2,7 +2,7 @@ import { fixtureJourneys, transitRoutes } from '../mocks/fixtures'
 import type { JourneyRepository } from './journeyRepository'
 import type { Journey, TimelineItem } from '../types/journey'
 
-const STORAGE_KEY = 'journey-timeline:mock-db:v1'
+const STORAGE_KEY = 'journey-timeline:mock-db:v2'
 const wait = () => new Promise((resolve) => window.setTimeout(resolve, 180))
 const clone = <T,>(value: T): T => structuredClone(value)
 
@@ -85,7 +85,16 @@ export const mockJourneyRepository: JourneyRepository = {
     return clone(transitRoutes.map((route, routeIndex) => {
       const departure = new Date(base.getTime() + routeIndex * 7 * 60_000)
       const arrival = new Date(departure.getTime() + route.duration_minutes * 60_000)
-      return { ...route, departure_time: departure.toISOString(), arrival_time: arrival.toISOString(), legs: route.legs.map((leg) => ({ ...leg, from_station: from, to_station: to, departure_time: departure.toISOString(), arrival_time: arrival.toISOString() })) }
+      const offset = departure.getTime() - new Date(route.departure_time).getTime()
+      const lastLegIndex = route.legs.length - 1
+      const legs = route.legs.map((leg, legIndex) => ({
+        ...leg,
+        from_station: legIndex === 0 ? from : leg.from_station,
+        to_station: legIndex === lastLegIndex ? to : leg.to_station,
+        departure_time: new Date(new Date(leg.departure_time).getTime() + offset).toISOString(),
+        arrival_time: new Date(new Date(leg.arrival_time).getTime() + offset).toISOString(),
+      }))
+      return { ...route, departure_time: departure.toISOString(), arrival_time: arrival.toISOString(), legs }
     }))
   },
   async startEditSession(_journeyId, password) { await wait(); if (password !== 'demo') throw new Error('パスワードが違います。モックでは「demo」です。') },

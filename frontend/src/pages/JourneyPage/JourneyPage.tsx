@@ -4,6 +4,7 @@ import { isMockDataSource, journeyRepository } from '../../repositories'
 import type { EventInput, Journey, TimelineItem, TransitRoute } from '../../types/journey'
 import { formatTime, fromInputDateTime, groupTimeline, toInputDateTime } from '../../utils/date'
 import styles from './JourneyPage.module.css'
+import transitStyles from './TransitTimeline.module.css'
 
 type Editor = { type: 'event'; itemId?: string; index?: number } | { type: 'transit'; itemId?: string; index?: number } | { type: 'detail'; itemId: string } | null
 
@@ -112,7 +113,33 @@ function CreateJourney({ onCreated }: { onCreated: (journey: Journey) => void })
 
 function TimelineCard({ item, selected, onClick }: { item: TimelineItem; selected: boolean; onClick: () => void }) {
   if (item.item_type === 'event') return <button type="button" className={`${styles.timelineCard} ${styles.eventCard} ${selected ? styles.selected : ''}`} onClick={onClick}><time>{formatTime(item.start_time)}</time><span className={styles.cardIcon}>●</span><span className={styles.cardBody}><strong>{item.event.title}</strong><small>{item.event.duration_minutes ? `${item.event.duration_minutes}分` : '所要時間未定'}{item.event.address ? ` · ${item.event.address}` : ''}</small></span><span className={styles.chevron}>›</span></button>
-  return <button type="button" className={`${styles.timelineCard} ${styles.transitCard} ${selected ? styles.selected : ''}`} onClick={onClick}><time>{formatTime(item.start_time)}</time><span className={styles.cardIcon}>⇄</span><span className={styles.cardBody}><strong>{item.transit.departure_location} → {item.transit.arrival_location}</strong><small>{item.transit.transit_data.duration_minutes}分 · ¥{item.transit.transit_data.total_fare} · 乗換{item.transit.transit_data.transfers_count}回</small></span><span className={styles.chevron}>›</span></button>
+  const route = item.transit.transit_data
+  return (
+    <button type="button" className={`${styles.timelineCard} ${styles.transitCard} ${transitStyles.expandedTransitCard} ${selected ? styles.selected : ''}`} onClick={onClick}>
+      <time>{formatTime(item.start_time)}</time>
+      <span className={styles.cardIcon}>⇄</span>
+      <span className={styles.cardBody}>
+        <strong>{item.transit.departure_location} → {item.transit.arrival_location}</strong>
+        <small>{route.duration_minutes}分 · ¥{route.total_fare} · 乗換{route.transfers_count}回</small>
+        <span className={transitStyles.transitLegs}>
+          {route.legs.map((leg, index) => {
+            const nextLeg = route.legs[index + 1]
+            const waitMinutes = nextLeg ? Math.max(0, Math.round((new Date(nextLeg.departure_time).getTime() - new Date(leg.arrival_time).getTime()) / 60_000)) : 0
+            return (
+              <span className={transitStyles.transitLegGroup} key={`${leg.line_name}-${leg.from_station}-${index}`}>
+                <span className={transitStyles.transitLeg}>
+                  <span className={transitStyles.legTimes}>{formatTime(leg.departure_time)}<i />{formatTime(leg.arrival_time)}</span>
+                  <span className={transitStyles.legRoute}><b>{leg.line_name}</b><span>{leg.from_station} → {leg.to_station}</span>{leg.platform && <small>{leg.platform}</small>}</span>
+                </span>
+                {nextLeg && <span className={transitStyles.transferRow}><b>乗換</b><span>{leg.to_station}で乗り換え</span><small>{waitMinutes}分</small></span>}
+              </span>
+            )
+          })}
+        </span>
+      </span>
+      <span className={styles.chevron}>›</span>
+    </button>
+  )
 }
 
 function JourneyEditor({ journey, editable, onSaved }: { journey: Journey; editable: boolean; onSaved: (journey: Journey) => void }) {
@@ -138,7 +165,7 @@ function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extr
 }
 
 function ItemDetail({ item, onClose }: { item: TimelineItem; onClose: () => void }) {
-  return <div className={styles.editor}><div className={styles.editorTop}><p className={styles.sectionLabel}>DETAIL</p><button className={styles.close} type="button" onClick={onClose}>×</button></div>{item.item_type === 'event' ? <><div className={styles.detailIcon}>●</div><h2>{item.event.title}</h2><dl><dt>時間</dt><dd>{formatTime(item.start_time)} — {formatTime(item.end_time)}</dd><dt>住所</dt><dd>{item.event.address ?? '未設定'}</dd><dt>メモ</dt><dd>{item.event.memo ?? 'なし'}</dd></dl></> : <><div className={`${styles.detailIcon} ${styles.blue}`}>⇄</div><h2>{item.transit.departure_location}<br />→ {item.transit.arrival_location}</h2><div className={styles.routeSummary}><strong>{item.transit.transit_data.duration_minutes}分</strong><span>¥{item.transit.transit_data.total_fare}</span><span>乗換 {item.transit.transit_data.transfers_count}回</span></div>{item.transit.transit_data.legs.map((leg) => <div className={styles.leg} key={`${leg.line_name}-${leg.from_station}`}><strong>{leg.line_name}</strong><span>{leg.from_station} → {leg.to_station}</span><small>{leg.platform}</small></div>)}</>}</div>
+  return <div className={styles.editor}><div className={styles.editorTop}><p className={styles.sectionLabel}>DETAIL</p><button className={styles.close} type="button" onClick={onClose}>×</button></div>{item.item_type === 'event' ? <><div className={styles.detailIcon}>●</div><h2>{item.event.title}</h2><dl><dt>時間</dt><dd>{formatTime(item.start_time)} — {formatTime(item.end_time)}</dd><dt>住所</dt><dd>{item.event.address ?? '未設定'}</dd><dt>メモ</dt><dd>{item.event.memo ?? 'なし'}</dd></dl></> : <><div className={`${styles.detailIcon} ${styles.blue}`}>⇄</div><h2>{item.transit.departure_location}<br />→ {item.transit.arrival_location}</h2><div className={styles.routeSummary}><strong>{item.transit.transit_data.duration_minutes}分</strong><span>¥{item.transit.transit_data.total_fare}</span><span>乗換 {item.transit.transit_data.transfers_count}回</span></div></>}</div>
 }
 
 function AuthDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
