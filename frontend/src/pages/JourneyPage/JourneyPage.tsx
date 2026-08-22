@@ -90,7 +90,7 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
           {editor?.type === 'detail' && selectedItem && <ItemDetail item={selectedItem} onClose={() => setEditor(null)} />}
         </aside>}
       </div>
-      {authOpen && <AuthDialog onClose={() => setAuthOpen(false)} onSuccess={() => { setAuthOpen(false); setIsEditing(true); showNotice('編集モードに切り替えました') }} />}
+      {authOpen && <AuthDialog onClose={() => setAuthOpen(false)} onSuccess={() => { setAuthOpen(false); setIsEditing(true); void refresh(); showNotice('編集モードに切り替えました') }} />}
       {notice && <div className={styles.toast} role="status">✓ {notice}</div>}
     </main>
   )
