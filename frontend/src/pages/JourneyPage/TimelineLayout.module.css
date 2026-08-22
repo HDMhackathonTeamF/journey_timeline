@@ -1,0 +1,193 @@
+.timelineLine::before {
+  left: 29px;
+  width: 2px;
+  background: #aeb3b8;
+}
+
+.referenceCard {
+  display: block;
+  transform: none !important;
+  padding: 7px 10px 7px 0;
+  border-color: #b9bdc1;
+  background: #f1f1f1;
+}
+
+.referenceCard:hover {
+  background: #e9edf1;
+}
+
+.referenceCard::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: 28px;
+  width: 2px;
+  background: #aeb3b8;
+}
+
+.itemWrap:first-child .referenceCard::before {
+  top: 18px;
+}
+
+.itemWrap:last-child .referenceCard::before {
+  bottom: 31px;
+}
+
+.referenceCard:hover::before {
+  background: #9ea5aa;
+}
+
+.timelineRow {
+  display: grid;
+  grid-template-columns: 79px minmax(0, 1fr);
+  align-items: start;
+  gap: 3px;
+  text-align: left;
+}
+
+.timeAndMarker,
+.durationRow,
+.rideRow {
+  display: grid;
+  grid-template-columns: 58px 18px minmax(0, 1fr);
+  align-items: center;
+  gap: 3px;
+  text-align: left;
+}
+
+.timeAndMarker time {
+  z-index: 2;
+  justify-self: center;
+  min-width: 48px;
+  padding: 4px 6px;
+  border-radius: 2px;
+  background: #073f70;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.timeAndMarker {
+  grid-template-columns: 58px 18px;
+  align-items: center;
+}
+
+.eventMarker,
+.transitMarker,
+.transferMarker,
+.endMarker {
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+}
+
+.eventMarker {
+  color: var(--red);
+  font-size: 13px;
+}
+
+.transitMarker {
+  color: #0789d1;
+  font-size: 13px;
+}
+
+.transferMarker {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  color: #07538c;
+  background: #07538c;
+  font-size: 0;
+}
+
+.endMarker {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  background: #6f7478;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.rowBody {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+  padding-top: 3px;
+}
+
+.rowBody strong {
+  font-size: 14px;
+}
+
+.rowBody small,
+.rideRow small,
+.durationRow small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.durationRow,
+.rideRow {
+  min-height: 24px;
+}
+
+.durationRow i,
+.rideRow i {
+  justify-self: center;
+  width: 0;
+  height: 0;
+}
+
+.durationRow small {
+  padding: 4px 0;
+}
+
+.rideRow > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 7px 0;
+}
+
+.rideRow b {
+  color: #07538c;
+  font-size: 11px;
+}
+
+.transferTimes {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.05;
+}
+
+@media (max-width: 680px) {
+  .timelineRow {
+    grid-template-columns: 79px minmax(0, 1fr);
+    gap: 3px;
+  }
+
+  .timeAndMarker,
+  .durationRow,
+  .rideRow {
+    grid-template-columns: 58px 18px minmax(0, 1fr);
+    gap: 3px;
+  }
+
+  .timelineLine::before {
+    left: 29px;
+  }
+
+  .timeAndMarker {
+    grid-template-columns: 58px 18px;
+  }
+
+}
