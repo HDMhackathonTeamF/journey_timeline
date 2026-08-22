@@ -48,15 +48,26 @@
 - [x] 環境変数ベースの動的 CORS 設定および本番環境（`production`）切り替え対応
 - [x] 本番デプロイ対応事項一覧 (`backend/docs/required_actions.md`) の作成
 
+### Phase 9: 並べ替え（Reorder）および旅程CRUD拡張・認可強化
+- [x] タイムラインアイテム順序一括更新 API (`PATCH/PUT /api/v1/journeys/{journey_id}/items/reorder`, `/journeys/{journey_id}/reorder`) の実装
+- [x] 並べ替え用 Pydantic スキーマ (`ItemReorderRequest`, `ItemReorderItem`) の定義
+- [x] 旅程タイトル等の更新 API (`PATCH/PUT /api/v1/journeys/{journey_id}`) および旅程削除 API (`DELETE /api/v1/journeys/{journey_id}`) の実装
+- [x] 旅程更新用 Pydantic スキーマ (`JourneyUpdate`) の定義
+- [x] アイテム新規追加時の `order_index` 自動インクリメント・シフト処理の実装
+- [x] パスワード保護された旅程に対する全更新・削除・並べ替えエンドポイントでの JWT トークン認可検証の実装
+- [x] フロントエンド側リポジトリ (`apiJourneyRepository.ts`) での認証ヘッダー付与および並べ替え連携対応
+
 ## 動作確認結果
 - PostgreSQLコンテナが正常に起動し、テーブル構造が構築されていることを確認しました。
 - `fastapi dev` (または `uvicorn`) によるバックエンドサーバーの起動に成功しました。
 - ヘルスチェックエンドポイント (`/health`) で `{"status": "ok", "environment": "development"}` が返却されることを確認済みです。
 - 新規追加したJWT・パスワード保護APIおよびレートリミッターが正常に稼働しています。
 - [Swagger UI (http://localhost:8000/docs)](http://localhost:8000/docs) が利用可能になっています。
+- バックエンド統合テストにおいて、旅程作成 → 複数アイテム追加 → 並べ替え（`reorder` API） → 永続化確認 → 旅程削除の一連のライフサイクルが正常に動作することを確認しました。
 
 ## 次のステップ (Next Steps)
-バックエンド側のベース機能、外部連携、および本番対応が完了しました。今後は以下に進みます：
+バックエンド側のベース機能、外部連携、旅程・アイテムの全CRUDおよび並べ替え機能が完了しました。今後は以下に進みます：
 - フロントエンド（React）側との連携：OpenAPI クライアント自動生成の実行とコンポーネント実装
 - クラウド選定およびインフラ・CI/CD環境のセットアップ（詳細は `required_actions.md` を参照）
+
 

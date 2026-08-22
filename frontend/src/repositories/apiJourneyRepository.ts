@@ -28,20 +28,20 @@ export const apiJourneyRepository: JourneyRepository = {
     if (password) await verifyJourney(created.id, password)
     return { ...created, items: created.items ?? [] }
   },
-  updateJourney: (id, title) => request<Journey>(`/journeys/${id}`, { method: 'PATCH', body: JSON.stringify({ title }) }),
-  deleteJourney: (id) => request<void>(`/journeys/${id}`, { method: 'DELETE' }),
-  createEvent: (journeyId, input, index) => request<TimelineItem>(`/journeys/${journeyId}/items`, { method: 'POST', body: JSON.stringify({ ...itemPayload(input), order_index: index }) }),
-  createTransit: (journeyId, input, index) => request<TimelineItem>(`/journeys/${journeyId}/items`, { method: 'POST', body: JSON.stringify({ ...transitPayload(input), order_index: index }) }),
-  updateEvent: (_journeyId, itemId, input) => request<TimelineItem>(`/items/${itemId}`, { method: 'PUT', body: JSON.stringify(itemPayload(input)) }),
-  updateTransit: (_journeyId, itemId, input) => request<TimelineItem>(`/items/${itemId}`, { method: 'PUT', body: JSON.stringify(transitPayload(input)) }),
-  deleteItem: (_journeyId, itemId) => request<void>(`/items/${itemId}`, { method: 'DELETE' }),
+  updateJourney: (id, title) => request<Journey>(`/journeys/${id}`, { method: 'PATCH', headers: authHeaders(id), body: JSON.stringify({ title }) }),
+  deleteJourney: (id) => request<void>(`/journeys/${id}`, { method: 'DELETE', headers: authHeaders(id) }),
+  createEvent: (journeyId, input, index) => request<TimelineItem>(`/journeys/${journeyId}/items`, { method: 'POST', headers: authHeaders(journeyId), body: JSON.stringify({ ...itemPayload(input), order_index: index }) }),
+  createTransit: (journeyId, input, index) => request<TimelineItem>(`/journeys/${journeyId}/items`, { method: 'POST', headers: authHeaders(journeyId), body: JSON.stringify({ ...transitPayload(input), order_index: index }) }),
+  updateEvent: (journeyId, itemId, input) => request<TimelineItem>(`/items/${itemId}`, { method: 'PUT', headers: authHeaders(journeyId), body: JSON.stringify(itemPayload(input)) }),
+  updateTransit: (journeyId, itemId, input) => request<TimelineItem>(`/items/${itemId}`, { method: 'PUT', headers: authHeaders(journeyId), body: JSON.stringify(transitPayload(input)) }),
+  deleteItem: (journeyId, itemId) => request<void>(`/items/${itemId}`, { method: 'DELETE', headers: authHeaders(journeyId) }),
   async moveItem(journeyId, itemId, direction) {
     const journey = await request<Journey>(`/journeys/${journeyId}`, { headers: authHeaders(journeyId) })
     const ids = journey.items.sort((a, b) => a.order_index - b.order_index).map((item) => item.id)
     const index = ids.indexOf(itemId); const target = index + direction
     if (index < 0 || target < 0 || target >= ids.length) return
     ;[ids[index], ids[target]] = [ids[target], ids[index]]
-    await request(`/journeys/${journeyId}/items/reorder`, { method: 'PATCH', body: JSON.stringify({ item_ids: ids }) })
+    await request(`/journeys/${journeyId}/items/reorder`, { method: 'PATCH', headers: authHeaders(journeyId), body: JSON.stringify({ item_ids: ids }) })
   },
   searchTransit: (from, to, time) => {
     const params = new URLSearchParams({ from_location: from, to_location: to })

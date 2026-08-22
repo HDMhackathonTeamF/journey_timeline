@@ -66,3 +66,12 @@ class JourneyWithItemsResponse(BaseModel):
     items: list[TimelineItemResponse] = []
     
     model_config = ConfigDict(from_attributes=True)
+
+class ItemReorderItem(BaseModel):
+    id: UUID
+    order_index: Optional[int] = None
+
+class ItemReorderRequest(BaseModel):
+    item_ids: Optional[list[UUID]] = None
+    items: Optional[list[ItemReorderItem]] = None
+
