@@ -84,7 +84,18 @@ async def fetch_single_plan(client: httpx.AsyncClient, url: str, params: dict, s
          print(f"Error fetching strategy {strategy}: {e}")
          return []
 
-async def fetch_transit_plan(from_location: str, to_location: str, time_str: str | None = None) -> TransitPlanResponse:
+async def fetch_transit_plan(
+    from_location: str, 
+    to_location: str, 
+    time_str: str | None = None,
+    date_str: str | None = None,
+    type_str: str | None = None,
+    allow_modes: str | None = None,
+    avoid_modes: str | None = None,
+    via_str: str | None = None,
+    max_transfers: int | None = None,
+    avoid_walk: bool | None = None
+) -> TransitPlanResponse:
     # Get the base URL without /plan
     base_url = settings.TRANSIT_API_BASE_URL.replace("/plan", "")
     plan_url = f"{base_url}/guidance/plan"
@@ -106,6 +117,21 @@ async def fetch_transit_plan(from_location: str, to_location: str, time_str: str
             }
             if time_str:
                 params["time"] = time_str
+            if date_str:
+                params["date"] = date_str
+            if type_str:
+                params["type"] = type_str
+            if allow_modes:
+                params["allowModes"] = allow_modes
+            if avoid_modes:
+                params["avoidModes"] = avoid_modes
+            if via_str:
+                params["via"] = via_str
+            if max_transfers is not None:
+                params["maxTransfers"] = max_transfers
+            if avoid_walk is not None:
+                params["avoidWalk"] = str(avoid_walk).lower()
+
                 
             # 3. Parallel fetching for different strategies
             strategies = ["fastest", "lowestFare", "fewestTransfers"]

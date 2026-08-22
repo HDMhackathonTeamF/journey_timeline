@@ -69,6 +69,7 @@ backend/
 | `departure_location` | String(255) | NOT NULL | 出発地（駅名等） |
 | `arrival_location` | String(255) | NOT NULL | 到着地（駅名等） |
 | `transit_data` | JSONB | NULLable | Transit APIから取得した詳細データ成型用 |
+| `memo` | Text | NULLable | 備考・メモ（追加実装） |
 
 ## 4. APIエンドポイント詳細仕様
 
@@ -93,7 +94,16 @@ backend/
 }
 ```
 
-**② 旅程詳細とタイムラインの取得（共有・閲覧用）**
+**② 旅程の検索・一覧取得**
+* Endpoint: `GET /api/v1/journeys`
+* Query Parameters:
+  * `title_like` (string, 任意): 旅程タイトルの部分一致検索キーワード
+  * `limit` (integer, 任意): 取得件数 (デフォルト10)
+  * `offset` (integer, 任意): スキップ件数 (デフォルト0)
+* Response (200 OK):
+  検索条件に一致する旅程のリスト（最新順）を返却します。
+
+**③ 旅程詳細とタイムラインの取得（共有・閲覧用）**
 * Endpoint: `GET /api/v1/journeys/{journey_id}`
 * Response (200 OK):
   `order_index` 順にソートされたタイムラインアイテム一覧を返却します。`timeline_items` を取得する際は、`events` と `transits` の情報を結合し、フロントエンドが扱いやすいネストされたJSON形式で返却します。

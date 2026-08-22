@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Request, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -13,6 +13,20 @@ from app.schemas.timeline_item import JourneyWithItemsResponse
 
 router = APIRouter(prefix="/api/v1/journeys", tags=["Journeys"])
 
+@router.get("", response_model=list[JourneyResponse])
+async def list_journeys(
+    title_like: Optional[str] = Query(None, description="Search by title"),
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(Journey).order_by(Journey.created_at.desc())
+    if title_like:
+        stmt = stmt.where(Journey.title.ilike(f"%{title_like}%"))
+    stmt = stmt.limit(limit).offset(offset)
+    result = await db.execute(stmt)
+    journeys = result.scalars().all()
+    return journeys
 
 @router.post("", response_model=JourneyResponse, status_code=status.HTTP_201_CREATED)
 async def create_journey(journey_in: JourneyCreate, db: AsyncSession = Depends(get_db)):
