@@ -1,0 +1,43 @@
+.noDetailWorkspace {
+  grid-template-columns: 156px minmax(390px, 1fr);
+}
+
+.viewNoDetailWorkspace {
+  grid-template-columns: minmax(480px, 1fr);
+}
+
+.journeyTitleButton {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.journeyTitleButton:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+}
+
+@media (max-width: 1000px) {
+  .noDetailWorkspace {
+    grid-template-columns: 120px minmax(420px, 1fr);
+  }
+
+
+  .viewNoDetailWorkspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .noDetailWorkspace,
+  .viewNoDetailWorkspace {
+    display: block;
+  }
+}

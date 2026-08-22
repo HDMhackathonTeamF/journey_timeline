@@ -1,0 +1,79 @@
+.expandedTransitCard {
+  align-items: start;
+}
+
+.transitLegs,
+.transitLegGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.transitLegs {
+  margin-top: 8px;
+  padding-top: 5px;
+  border-top: 1px solid var(--line);
+}
+
+.transitLeg {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 10px;
+  padding: 9px 0;
+}
+
+.legTimes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--blue);
+  font-size: 10px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.legTimes i {
+  display: block;
+  width: 1px;
+  height: 15px;
+  background: var(--blue);
+}
+
+.legRoute {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 10px;
+  min-width: 0;
+}
+
+.legRoute b {
+  grid-column: 1 / -1;
+  font-size: 12px;
+}
+
+.legRoute > span {
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.legRoute small {
+  font-size: 10px;
+}
+
+.transferRow {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  background: var(--blue-soft);
+  font-size: 10px;
+}
+
+.transferRow b {
+  color: var(--blue);
+}
+
+.transferRow small {
+  color: var(--muted);
+}
