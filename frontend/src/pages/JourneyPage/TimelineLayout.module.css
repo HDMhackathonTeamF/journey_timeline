@@ -4,6 +4,10 @@
   background: #aeb3b8;
 }
 
+.editingTimeline::before {
+  bottom: 27px;
+}
+
 .referenceCard {
   display: block;
   transform: none !important;
@@ -199,6 +203,43 @@
 .rideRow b {
   color: #07538c;
   font-size: 11px;
+}
+
+.travelDuration {
+  position: relative;
+  z-index: 2;
+  align-self: center;
+  justify-self: center;
+  transform: translateY(-6px);
+  min-width: 40px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: #c9cacc;
+  color: #073f70;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: center;
+}
+
+.travelDuration::before,
+.travelDuration::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 2px;
+  height: 8px;
+  background: #aeb3b8;
+  transform: translateX(-50%);
+}
+
+.travelDuration::before {
+  bottom: 100%;
+}
+
+.travelDuration::after {
+  top: 100%;
 }
 
 .transferTimes {
