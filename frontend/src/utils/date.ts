@@ -11,6 +11,29 @@ export const toInputDateTime = (value: string | null) => {
 }
 export const fromInputDateTime = (value: string) => value ? new Date(value).toISOString() : null
 
+export function addMinutesToInputDateTime(value: string, minutes: number): string {
+  if (!value || Number.isNaN(minutes)) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const shifted = new Date(date.getTime() + minutes * 60_000)
+  return toInputDateTime(shifted.toISOString())
+}
+
+export function subtractMinutesFromInputDateTime(value: string, minutes: number): string {
+  return addMinutesToInputDateTime(value, -minutes)
+}
+
+export function getDiffMinutes(startValue: string, endValue: string): number | null {
+  if (!startValue || !endValue) return null
+  const startDate = new Date(startValue)
+  const endDate = new Date(endValue)
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return null
+  const diffMs = endDate.getTime() - startDate.getTime()
+  if (diffMs < 0) return null
+  return Math.round(diffMs / 60_000)
+}
+
+
 export function groupTimeline(items: TimelineItem[]): TimelineGroup[] {
   const dated = new Map<string, TimelineItem[]>()
   const untimed: TimelineItem[] = []

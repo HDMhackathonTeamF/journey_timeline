@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { navigate } from '../../app/navigation'
 import { isMockDataSource, journeyRepository } from '../../repositories'
 import type { EventInput, Journey, TimelineItem, TransitRoute } from '../../types/journey'
-import { formatTime, fromInputDateTime, groupTimeline, toInputDateTime } from '../../utils/date'
+import { addMinutesToInputDateTime, formatTime, fromInputDateTime, getDiffMinutes, groupTimeline, subtractMinutesFromInputDateTime, toInputDateTime } from '../../utils/date'
 import styles from './JourneyPage.module.css'
 import panelStyles from './PanelLayout.module.css'
 import timelineStyles from './TimelineLayout.module.css'
@@ -167,14 +167,201 @@ function EventEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extrac
   const [duration, setDuration] = useState(item?.event.duration_minutes?.toString() ?? '')
   const [address, setAddress] = useState(item?.event.address ?? '')
   const [memo, setMemo] = useState(item?.event.memo ?? '')
-  const submit = (event: FormEvent) => { event.preventDefault(); onSave({ title: title.trim(), start_time: fromInputDateTime(start), end_time: fromInputDateTime(end), duration_minutes: duration ? Number(duration) : null, address: address.trim() || null, memo: memo.trim() || null }) }
-  return <form className={styles.editor} onSubmit={submit}><div className={styles.editorTop}><div><p className={styles.sectionLabel}>EVENT</p><h2>{item ? '予定を編集' : '予定を追加'}</h2></div><button className={styles.close} type="button" onClick={onCancel}>×</button></div><label>予定名<input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="行きたい場所、やりたいこと" required /></label><div className={styles.fieldRow}><label>開始<input type="datetime-local" value={start} onChange={(event) => setStart(event.target.value)} /></label><label>終了<input type="datetime-local" value={end} onChange={(event) => setEnd(event.target.value)} /></label></div><label>滞在時間（分）<input type="number" min="0" value={duration} onChange={(event) => setDuration(event.target.value)} placeholder="60" /></label><label>住所<input value={address} onChange={(event) => setAddress(event.target.value)} placeholder="東京都…" /></label><label>メモ<textarea value={memo} onChange={(event) => setMemo(event.target.value)} rows={4} placeholder="予約情報や持ち物など" /></label><div className={styles.formActions}>{onDelete && <button className={styles.deleteButton} type="button" onClick={onDelete}>削除</button>}<button className={styles.saveButton} type="submit" disabled={busy || !title.trim()}>{busy ? '保存中…' : '保存する'}</button></div></form>
+
+  const handleStartChange = (newStart: string) => {
+    setStart(newStart)
+    if (newStart) {
+      const dur = Number(duration)
+      if (!Number.isNaN(dur) && dur > 0) {
+        setEnd(addMinutesToInputDateTime(newStart, dur))
+      } else if (end) {
+        const diff = getDiffMinutes(newStart, end)
+        if (diff !== null && diff >= 0) setDuration(diff.toString())
+      }
+    }
+  }
+
+  const handleEndChange = (newEnd: string) => {
+    setEnd(newEnd)
+    if (newEnd) {
+      if (start) {
+        const diff = getDiffMinutes(start, newEnd)
+        if (diff !== null && diff >= 0) setDuration(diff.toString())
+      } else {
+        const dur = Number(duration)
+        if (!Number.isNaN(dur) && dur > 0) {
+          setStart(subtractMinutesFromInputDateTime(newEnd, dur))
+        }
+      }
+    }
+  }
+
+  const handleDurationChange = (newDuration: string) => {
+    setDuration(newDuration)
+    const dur = Number(newDuration)
+    if (!Number.isNaN(dur) && dur > 0) {
+      if (start) {
+        setEnd(addMinutesToInputDateTime(start, dur))
+      } else if (end) {
+        setStart(subtractMinutesFromInputDateTime(end, dur))
+      }
+    }
+  }
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    onSave({
+      title: title.trim(),
+      start_time: fromInputDateTime(start),
+      end_time: fromInputDateTime(end),
+      duration_minutes: duration ? Number(duration) : null,
+      address: address.trim() || null,
+      memo: memo.trim() || null,
+    })
+  }
+
+  return (
+    <form className={styles.editor} onSubmit={submit}>
+      <div className={styles.editorTop}>
+        <div><p className={styles.sectionLabel}>EVENT</p><h2>{item ? '予定を編集' : '予定を追加'}</h2></div>
+        <button className={styles.close} type="button" onClick={onCancel}>×</button>
+      </div>
+      <label>予定名<input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="行きたい場所、やりたいこと" required /></label>
+      <div className={styles.fieldRow}>
+        <label>開始<input type="datetime-local" value={start} onChange={(event) => handleStartChange(event.target.value)} /></label>
+        <label>終了<input type="datetime-local" value={end} onChange={(event) => handleEndChange(event.target.value)} /></label>
+      </div>
+      <label>滞在時間（分）<input type="number" min="0" value={duration} onChange={(event) => handleDurationChange(event.target.value)} placeholder="60" /></label>
+      <label>住所<input value={address} onChange={(event) => setAddress(event.target.value)} placeholder="東京都…" /></label>
+      <label>メモ<textarea value={memo} onChange={(event) => setMemo(event.target.value)} rows={4} placeholder="予約情報や持ち物など" /></label>
+      <div className={styles.formActions}>
+        {onDelete && <button className={styles.deleteButton} type="button" onClick={onDelete}>削除</button>}
+        <button className={styles.saveButton} type="submit" disabled={busy || !title.trim()}>{busy ? '保存中…' : '保存する'}</button>
+      </div>
+    </form>
+  )
 }
 
 function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extract<TimelineItem, { item_type: 'transit' }>; onCancel: () => void; onSave: (route: TransitRoute, from: string, to: string) => void; onDelete?: () => void; busy: boolean }) {
-  const [from, setFrom] = useState(item?.transit.departure_location ?? ''); const [to, setTo] = useState(item?.transit.arrival_location ?? ''); const [time, setTime] = useState(toInputDateTime(item?.start_time ?? null)); const [routes, setRoutes] = useState<TransitRoute[]>(item ? [item.transit.transit_data] : []); const [searching, setSearching] = useState(false)
-  const search = async (event: FormEvent) => { event.preventDefault(); setSearching(true); setRoutes(await journeyRepository.searchTransit(from, to, time)); setSearching(false) }
-  return <div className={styles.editor}><div className={styles.editorTop}><div><p className={styles.sectionLabel}>TRANSIT</p><h2>{item ? '移動を編集' : '移動を追加'}</h2></div><button className={styles.close} type="button" onClick={onCancel}>×</button></div><form onSubmit={search}><label>出発地<input autoFocus value={from} onChange={(event) => setFrom(event.target.value)} placeholder="新浦安駅" required /></label><label>到着地<input value={to} onChange={(event) => setTo(event.target.value)} placeholder="秋葉原駅" required /></label><label>出発日時<input type="datetime-local" value={time} onChange={(event) => setTime(event.target.value)} /></label><div className={styles.formActions}>{onDelete && <button className={styles.deleteButton} type="button" onClick={onDelete}>削除</button>}<button className={styles.saveButton} type="submit" disabled={searching || !from.trim() || !to.trim()}>{searching ? '検索中…' : '経路を再検索'}</button></div></form>{routes.length > 0 && <div className={styles.routes}><p className={styles.sectionLabel}>{item ? 'SELECT ROUTE TO SAVE' : 'ROUTE OPTIONS'}</p>{routes.map((route) => <button className={transitStyles.routeOption} type="button" key={route.id} disabled={busy} onClick={() => onSave(route, from, to)}><span className={transitStyles.routeOptionSummary}><span><strong>{route.summary}</strong><small>{formatTime(route.departure_time)} → {formatTime(route.arrival_time)}</small></span><span><strong>{route.duration_minutes}分</strong><small>{route.total_fare > 0 ? `¥${route.total_fare}` : '料金情報なし'} · 乗換{route.transfers_count}回</small></span></span><TransitLegDetails route={route} /></button>)}</div>}</div>
+  const [from, setFrom] = useState(item?.transit.departure_location ?? '')
+  const [to, setTo] = useState(item?.transit.arrival_location ?? '')
+  const [searchType, setSearchType] = useState<'departure' | 'arrival'>('departure')
+  const [departureTime, setDepartureTime] = useState(toInputDateTime(item?.start_time ?? null))
+  const [arrivalTime, setArrivalTime] = useState(toInputDateTime(item?.end_time ?? null))
+  const [routes, setRoutes] = useState<TransitRoute[]>(item ? [item.transit.transit_data] : [])
+  const [searching, setSearching] = useState(false)
+  const [error, setError] = useState('')
+
+  const activeTime = searchType === 'arrival' ? arrivalTime : departureTime
+  const setActiveTime = (val: string) => {
+    if (searchType === 'arrival') {
+      setArrivalTime(val)
+    } else {
+      setDepartureTime(val)
+    }
+  }
+
+  const handleSearch = async (targetType?: 'departure' | 'arrival') => {
+    const type = targetType ?? searchType
+    const timeToSend = type === 'arrival' ? arrivalTime : departureTime
+    if (!from.trim() || !to.trim()) return
+
+    setSearchType(type)
+    setSearching(true)
+    setError('')
+    try {
+      const results = await journeyRepository.searchTransit(from.trim(), to.trim(), timeToSend, type)
+      setRoutes(results)
+      if (results.length === 0) {
+        setError('該当する経路が見つかりませんでした。')
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : '経路の検索に失敗しました。')
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    void handleSearch()
+  }
+
+  return (
+    <div className={styles.editor}>
+      <div className={styles.editorTop}>
+        <div><p className={styles.sectionLabel}>TRANSIT</p><h2>{item ? '移動を編集' : '移動を追加'}</h2></div>
+        <button className={styles.close} type="button" onClick={onCancel}>×</button>
+      </div>
+      <form onSubmit={submit}>
+        <label>出発地<input autoFocus value={from} onChange={(event) => setFrom(event.target.value)} placeholder="新浦安駅" required /></label>
+        <label>到着地<input value={to} onChange={(event) => setTo(event.target.value)} placeholder="秋葉原駅" required /></label>
+
+        <div className={styles.dateTimeField}>
+          <div className={styles.timeTypeRow}>
+            <span className={styles.fieldLabel}>{searchType === 'departure' ? '出発日時' : '到着日時'}</span>
+            <div className={styles.timeTypeTabs}>
+              <button
+                type="button"
+                className={`${styles.timeTypeTab} ${searchType === 'departure' ? styles.timeTypeTabActive : ''}`}
+                onClick={() => setSearchType('departure')}
+              >
+                出発
+              </button>
+              <button
+                type="button"
+                className={`${styles.timeTypeTab} ${searchType === 'arrival' ? styles.timeTypeTabActive : ''}`}
+                onClick={() => setSearchType('arrival')}
+              >
+                到着
+              </button>
+            </div>
+          </div>
+          <div className={styles.timeInputWrap}>
+            <input
+              type="datetime-local"
+              value={activeTime}
+              onChange={(event) => setActiveTime(event.target.value)}
+            />
+            {activeTime && (
+              <button
+                type="button"
+                className={styles.clearTimeButton}
+                onClick={() => setActiveTime('')}
+                title="日時指定をクリア"
+              >
+                クリア
+              </button>
+            )}
+          </div>
+        </div>
+
+        {error && <p className={styles.formError} role="alert">{error}</p>}
+
+        <div className={styles.formActions}>
+          {onDelete && <button className={styles.deleteButton} type="button" onClick={onDelete}>削除</button>}
+          <button className={styles.saveButton} type="submit" disabled={searching || !from.trim() || !to.trim()}>
+            {searching ? '検索中…' : `${searchType === 'arrival' ? '到着日時' : '出発日時'}で経路を検索`}
+          </button>
+        </div>
+      </form>
+
+      {routes.length > 0 && (
+        <div className={styles.routes}>
+          <p className={styles.sectionLabel}>{item ? 'SELECT ROUTE TO SAVE' : 'ROUTE OPTIONS'}</p>
+          {routes.map((route) => (
+            <button className={transitStyles.routeOption} type="button" key={route.id} disabled={busy} onClick={() => onSave(route, from, to)}>
+              <span className={transitStyles.routeOptionSummary}>
+                <span><strong>{route.summary}</strong><small>{formatTime(route.departure_time)} → {formatTime(route.arrival_time)}</small></span>
+                <span><strong>{route.duration_minutes}分</strong><small>{route.total_fare > 0 ? `¥${route.total_fare}` : '料金情報なし'} · 乗換{route.transfers_count}回</small></span>
+              </span>
+              <TransitLegDetails route={route} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function TransitLegDetails({ route }: { route: TransitRoute }) {

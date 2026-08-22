@@ -43,9 +43,10 @@ export const apiJourneyRepository: JourneyRepository = {
     ;[ids[index], ids[target]] = [ids[target], ids[index]]
     await request(`/journeys/${journeyId}/items/reorder`, { method: 'PATCH', headers: authHeaders(journeyId), body: JSON.stringify({ item_ids: ids }) })
   },
-  searchTransit: (from, to, time) => {
+  searchTransit: (from, to, time, timeType = 'departure') => {
     const params = new URLSearchParams({ from_location: from, to_location: to })
     if (time) params.set('time', new Date(time).toISOString())
+    if (timeType) params.set('type', timeType)
     return request<{ routes: TransitRoute[] }>(`/transit/plan?${params}`).then((result) => result.routes.map((route, index) => ({
       ...route,
       id: route.id ?? `${route.summary}-${route.departure_time}-${index}`,
