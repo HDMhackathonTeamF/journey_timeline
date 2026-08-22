@@ -8,7 +8,7 @@ from app.core.security import get_password_hash, verify_password, create_access_
 from app.core.limiter import limiter
 from app.models.journey import Journey
 from app.models.timeline_item import TimelineItem
-from app.schemas.journey import JourneyCreate, JourneyResponse, JourneyVerifyRequest, TokenResponse
+from app.schemas.journey import JourneyCreate, JourneyUpdate, JourneyResponse, JourneyVerifyRequest, TokenResponse
 from app.schemas.timeline_item import JourneyWithItemsResponse
 
 router = APIRouter(prefix="/api/v1/journeys", tags=["Journeys"])
@@ -103,4 +103,60 @@ async def verify_journey_password(
         
     access_token = create_access_token(subject=str(db_journey.id))
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.patch("/{journey_id}", response_model=JourneyResponse)
+@router.put("/{journey_id}", response_model=JourneyResponse)
+async def update_journey(
+    journey_id: str,
+    journey_in: JourneyUpdate,
+    authorization: Optional[str] = Header(None),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(Journey).where(Journey.id == journey_id)
+    result = await db.execute(stmt)
+    db_journey = result.scalars().first()
+    if not db_journey:
+        raise HTTPException(status_code=404, detail="Journey not found")
+        
+    if db_journey.is_protected:
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=403, detail="Authentication required for protected journey")
+        token = authorization.split(" ")[1]
+        subject = verify_access_token(token)
+        if subject != str(db_journey.id):
+            raise HTTPException(status_code=403, detail="Invalid or expired token")
+
+    if journey_in.title is not None:
+        db_journey.title = journey_in.title
+    if journey_in.password is not None:
+        db_journey.password_hash = get_password_hash(journey_in.password)
+
+    await db.commit()
+    await db.refresh(db_journey)
+    return db_journey
+
+@router.delete("/{journey_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_journey(
+    journey_id: str,
+    authorization: Optional[str] = Header(None),
+    db: AsyncSession = Depends(get_db)
+):
+    stmt = select(Journey).where(Journey.id == journey_id)
+    result = await db.execute(stmt)
+    db_journey = result.scalars().first()
+    if not db_journey:
+        raise HTTPException(status_code=404, detail="Journey not found")
+
+    if db_journey.is_protected:
+        if not authorization or not authorization.startswith("Bearer "):
+            raise HTTPException(status_code=403, detail="Authentication required for protected journey")
+        token = authorization.split(" ")[1]
+        subject = verify_access_token(token)
+        if subject != str(db_journey.id):
+            raise HTTPException(status_code=403, detail="Invalid or expired token")
+
+    await db.delete(db_journey)
+    await db.commit()
+    return None
+
 
