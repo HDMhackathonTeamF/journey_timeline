@@ -4,11 +4,15 @@ import type { JourneyRepository } from './journeyRepository'
 
 const itemPayload = (input: EventInput) => ({ item_type: 'event', start_time: input.start_time, end_time: input.end_time, event: { title: input.title, duration_minutes: input.duration_minutes, address: input.address, memo: input.memo } })
 const transitPayload = (input: TransitInput) => ({ item_type: 'transit', start_time: input.route.departure_time, end_time: input.route.arrival_time, transit: { departure_location: input.departure_location, arrival_location: input.arrival_location, transit_data: input.route } })
+type JourneyCreateResponse = Omit<Journey, 'items'> & { items?: TimelineItem[] }
 
 export const apiJourneyRepository: JourneyRepository = {
   listJourneys: () => request<JourneySummary[]>('/journeys'),
   getJourney: (id) => request<Journey>(`/journeys/${id}`),
-  createJourney: (title, password) => request<Journey>('/journeys', { method: 'POST', body: JSON.stringify({ title, password }) }),
+  createJourney: async (title, password) => {
+    const created = await request<JourneyCreateResponse>('/journeys', { method: 'POST', body: JSON.stringify({ title, password }) })
+    return { ...created, items: created.items ?? [] }
+  },
   updateJourney: (id, title) => request<Journey>(`/journeys/${id}`, { method: 'PATCH', body: JSON.stringify({ title }) }),
   deleteJourney: (id) => request<void>(`/journeys/${id}`, { method: 'DELETE' }),
   createEvent: (journeyId, input, index) => request<TimelineItem>(`/journeys/${journeyId}/items`, { method: 'POST', body: JSON.stringify({ ...itemPayload(input), order_index: index }) }),
