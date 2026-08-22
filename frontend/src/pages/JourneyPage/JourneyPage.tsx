@@ -98,8 +98,16 @@ function CreateJourney({ onCreated }: { onCreated: (journey: Journey) => void })
   const [title, setTitle] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
-  const submit = async (event: FormEvent) => { event.preventDefault(); if (!title.trim() || !password) return; setBusy(true); onCreated(await journeyRepository.createJourney(title.trim(), password)) }
-  return <main className={styles.createPage}><header className={styles.header}><button className={styles.brand} type="button" onClick={() => navigate('/')}>Journey Timeline</button></header><section className={styles.createCard}><p className={styles.sectionLabel}>NEW JOURNEY</p><h1>新しい旅を<br />はじめよう。</h1><p>タイトルを決めたら、予定と移動をタイムラインに並べていきます。</p><form onSubmit={submit}><label>旅程のタイトル<input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="例：東京1日観光プラン" required /></label><label>編集用パスワード<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="モックでは保存されません" required /></label><button type="submit" disabled={busy || !title.trim() || !password}>{busy ? '作成しています…' : '旅程を作成する →'}</button></form><button className={styles.backLink} type="button" onClick={() => navigate('/')}>← ホームへ戻る</button></section></main>
+  const [error, setError] = useState('')
+  const submit = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!title.trim() || !password) return
+    setBusy(true); setError('')
+    try { onCreated(await journeyRepository.createJourney(title.trim(), password)) }
+    catch (caught) { setError(caught instanceof Error ? caught.message : '旅程を作成できませんでした。') }
+    finally { setBusy(false) }
+  }
+  return <main className={styles.createPage}><header className={styles.header}><button className={styles.brand} type="button" onClick={() => navigate('/')}>Journey Timeline</button></header><section className={styles.createCard}><p className={styles.sectionLabel}>NEW JOURNEY</p><h1>新しい旅を<br />はじめよう。</h1><p>タイトルを決めたら、予定と移動をタイムラインに並べていきます。</p><form onSubmit={submit}><label>旅程のタイトル<input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="例：東京1日観光プラン" required /></label><label>編集用パスワード<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isMockDataSource ? 'モックでは保存されません' : '編集時に必要です'} required /></label>{error && <p className={styles.formError} role="alert">{error}</p>}<button type="submit" disabled={busy || !title.trim() || !password}>{busy ? '作成しています…' : '旅程を作成する →'}</button></form><button className={styles.backLink} type="button" onClick={() => navigate('/')}>← ホームへ戻る</button></section></main>
 }
 
 function TimelineCard({ item, selected, onClick }: { item: TimelineItem; selected: boolean; onClick: () => void }) {

@@ -23,18 +23,37 @@ mise install
 ```sh
 pnpm install
 ```
-### 4. それぞれの起動の仕方を覚える
+### 4. 起動方法
 - このプロジェクトにはバックエンドとフロントエンドがあります
     - バックエンドはサーバ側のプログラム，フロントエンドは主にブラウザ上で見る画面のプログラムがあります
-#### フロントエンド側の起動
-以下を実行して出てくるURLを開くと確認できます
-```sh
-cd frontend # frontendのフォルダに入る
-pnpm run dev # サーバの起動
+
+#### フロントエンドだけをモックで起動
+```powershell
+Copy-Item frontend\.env.example frontend\.env
+cd frontend
+pnpm dev
 ```
-#### バックエンド側の起動
-```sh
-cd backend # backendのフォルダに入る
+
+#### バックエンドと接続して起動
+リポジトリ直下で実行します。
+```powershell
+Copy-Item .env.example .env
+Copy-Item frontend\.env.example frontend\.env
+docker compose up -d
+```
+
+`frontend/.env`の`VITE_DATA_SOURCE`を`api`に変更します。
+
+バックエンドを起動します。
+```powershell
+cd backend
 uv sync
-uv run fastapi dev
+uv run alembic upgrade head
+uv run fastapi dev app/main.py
+```
+
+別のターミナルでフロントエンドを起動します。
+```powershell
+cd frontend
+pnpm dev
 ```
