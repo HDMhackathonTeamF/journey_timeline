@@ -69,7 +69,8 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
         </div>
       </header>
 
-      <div className={`${styles.workspace} ${!isEditing ? styles.viewWorkspace : ''} ${!editor ? (isEditing ? panelStyles.noDetailWorkspace : panelStyles.viewNoDetailWorkspace) : ''}`}>
+      <div className={styles.workspace}>
+        {!isEditing && <aside className={styles.tools} aria-hidden="true" />}
         {isEditing && <aside className={`${styles.tools} ${timelineStyles.addTools}`}><p className={styles.sectionLabel}>ADD TO PLAN</p><button type="button" onClick={() => setEditor({ type: 'event' })}><span className={`${timelineStyles.toolIcon} ${timelineStyles.eventMarker}`}><EventPinIcon /></span>予定を追加</button><button type="button" onClick={() => setEditor({ type: 'transit' })}><span className={`${timelineStyles.toolIcon} ${timelineStyles.transitMarker}`}><TrainIcon /></span>移動を追加</button><div className={styles.toolBottom}><button type="button" onClick={() => { setEditor(null); setIsEditing(false) }}>編集を終了</button><button className={styles.dangerText} type="button" onClick={deleteJourney}>旅程を削除</button></div></aside>}
 
         <section className={styles.timelinePane}>
@@ -118,9 +119,8 @@ function TimelineCard({ item, selected, onClick }: { item: TimelineItem; selecte
     <button type="button" className={`${styles.timelineCard} ${styles.eventCard} ${timelineStyles.referenceCard} ${selected ? styles.selected : ''}`} onClick={onClick}>
       <span className={timelineStyles.timelineRow}>
         <span className={timelineStyles.timeAndMarker}><time>{formatTime(item.start_time)}</time><span className={timelineStyles.eventMarker}><EventPinIcon /></span></span>
-        <span className={timelineStyles.rowBody}><strong>{item.event.title}</strong><small>{item.event.address ?? '場所未設定'}</small></span>
+        <span className={timelineStyles.rowBody}><strong>{item.event.title}</strong><small>{item.event.address ?? '場所未設定'}</small><small>{item.event.duration_minutes ? `滞在 ${item.event.duration_minutes}分` : '所要時間未定'}</small>{item.event.memo && <small>{item.event.memo}</small>}</span>
       </span>
-      <span className={timelineStyles.durationRow}><span /><i /><small>{item.event.duration_minutes ? `滞在 ${item.event.duration_minutes}分` : '所要時間未定'}</small></span>
       {item.end_time && <span className={timelineStyles.timelineRow}><span className={timelineStyles.timeAndMarker}><time>{formatTime(item.end_time)}</time><span className={timelineStyles.eventMarker}><EventPinIcon /></span></span><span className={timelineStyles.rowBody}><strong>{item.event.title}</strong><small>終了</small></span></span>}
     </button>
   )
