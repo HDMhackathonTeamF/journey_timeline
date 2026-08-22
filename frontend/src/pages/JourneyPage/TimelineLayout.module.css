@@ -41,7 +41,7 @@
 
 .timelineRow {
   display: grid;
-  grid-template-columns: 79px minmax(0, 1fr);
+  grid-template-columns: 85px minmax(0, 1fr);
   align-items: start;
   gap: 3px;
   text-align: left;
@@ -51,7 +51,7 @@
 .durationRow,
 .rideRow {
   display: grid;
-  grid-template-columns: 58px 18px minmax(0, 1fr);
+  grid-template-columns: 58px 24px minmax(0, 1fr);
   align-items: center;
   gap: 3px;
   text-align: left;
@@ -72,14 +72,12 @@
 }
 
 .timeAndMarker {
-  grid-template-columns: 58px 18px;
+  grid-template-columns: 58px 24px;
   align-items: center;
 }
 
 .eventMarker,
-.transitMarker,
-.transferMarker,
-.endMarker {
+.transitMarker {
   z-index: 2;
   display: grid;
   place-items: center;
@@ -88,31 +86,37 @@
 
 .eventMarker {
   color: var(--red);
-  font-size: 13px;
 }
 
 .transitMarker {
   color: #0789d1;
-  font-size: 13px;
 }
 
-.transferMarker {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  color: #07538c;
-  background: #07538c;
-  font-size: 0;
-}
-
-.endMarker {
+.eventMarker svg {
   width: 18px;
   height: 18px;
-  border-radius: 2px;
-  background: #6f7478;
-  color: #fff;
-  font-size: 9px;
-  font-weight: 850;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.eventMarker circle {
+  fill: none;
+  stroke: currentColor;
+}
+
+.transitMarker svg {
+  width: 22px;
+  height: 20px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .rowBody {
@@ -171,14 +175,14 @@
 
 @media (max-width: 680px) {
   .timelineRow {
-    grid-template-columns: 79px minmax(0, 1fr);
+    grid-template-columns: 85px minmax(0, 1fr);
     gap: 3px;
   }
 
   .timeAndMarker,
   .durationRow,
   .rideRow {
-    grid-template-columns: 58px 18px minmax(0, 1fr);
+    grid-template-columns: 58px 24px minmax(0, 1fr);
     gap: 3px;
   }
 
@@ -187,7 +191,7 @@
   }
 
   .timeAndMarker {
-    grid-template-columns: 58px 18px;
+    grid-template-columns: 58px 24px;
   }
 
 }

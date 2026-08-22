@@ -116,11 +116,11 @@ function TimelineCard({ item, selected, onClick }: { item: TimelineItem; selecte
   if (item.item_type === 'event') return (
     <button type="button" className={`${styles.timelineCard} ${styles.eventCard} ${timelineStyles.referenceCard} ${selected ? styles.selected : ''}`} onClick={onClick}>
       <span className={timelineStyles.timelineRow}>
-        <span className={timelineStyles.timeAndMarker}><time>{formatTime(item.start_time)}</time><span className={timelineStyles.eventMarker}>●</span></span>
+        <span className={timelineStyles.timeAndMarker}><time>{formatTime(item.start_time)}</time><span className={timelineStyles.eventMarker}><EventPinIcon /></span></span>
         <span className={timelineStyles.rowBody}><strong>{item.event.title}</strong><small>{item.event.address ?? '場所未設定'}</small></span>
       </span>
       <span className={timelineStyles.durationRow}><span /><i /><small>{item.event.duration_minutes ? `滞在 ${item.event.duration_minutes}分` : '所要時間未定'}</small></span>
-      {item.end_time && <span className={timelineStyles.timelineRow}><span className={timelineStyles.timeAndMarker}><time>{formatTime(item.end_time)}</time><span className={timelineStyles.endMarker}>着</span></span><span className={timelineStyles.rowBody}><strong>{item.event.title}</strong><small>終了</small></span></span>}
+      {item.end_time && <span className={timelineStyles.timelineRow}><span className={timelineStyles.timeAndMarker}><time>{formatTime(item.end_time)}</time><span className={timelineStyles.eventMarker}><EventPinIcon /></span></span><span className={timelineStyles.rowBody}><strong>{item.event.title}</strong><small>終了</small></span></span>}
     </button>
   )
   const route = item.transit.transit_data
@@ -128,7 +128,7 @@ function TimelineCard({ item, selected, onClick }: { item: TimelineItem; selecte
   return (
     <button type="button" className={`${styles.timelineCard} ${styles.transitCard} ${timelineStyles.referenceCard} ${selected ? styles.selected : ''}`} onClick={onClick}>
       <span className={timelineStyles.timelineRow}>
-        <span className={timelineStyles.timeAndMarker}><time>{formatTime(firstLeg?.departure_time ?? item.start_time)}</time><span className={timelineStyles.transitMarker}>▰</span></span>
+        <span className={timelineStyles.timeAndMarker}><time>{formatTime(firstLeg?.departure_time ?? item.start_time)}</time><span className={timelineStyles.transitMarker}><TrainIcon /></span></span>
         <span className={timelineStyles.rowBody}><strong>{firstLeg?.from_station ?? item.transit.departure_location}</strong><small>{route.duration_minutes}分 · ¥{route.total_fare} · 乗換{route.transfers_count}回</small></span>
       </span>
       {route.legs.map((leg, index) => {
@@ -137,13 +137,21 @@ function TimelineCard({ item, selected, onClick }: { item: TimelineItem; selecte
         return <span className={timelineStyles.legBlock} key={`${leg.line_name}-${leg.from_station}-${index}`}>
           <span className={timelineStyles.rideRow}><span /><i /><span><b>{leg.line_name}</b><small>{leg.from_station} → {leg.to_station}{leg.platform ? ` · ${leg.platform}` : ''}</small></span></span>
           <span className={timelineStyles.timelineRow}>
-            <span className={timelineStyles.timeAndMarker}><time className={nextLeg ? timelineStyles.transferTimes : ''}><span>{formatTime(leg.arrival_time)}</span>{nextLeg && <span>{formatTime(nextLeg.departure_time)}</span>}</time><span className={nextLeg ? timelineStyles.transferMarker : timelineStyles.endMarker}>{nextLeg ? '●' : '着'}</span></span>
+            <span className={timelineStyles.timeAndMarker}><time className={nextLeg ? timelineStyles.transferTimes : ''}><span>{formatTime(leg.arrival_time)}</span>{nextLeg && <span>{formatTime(nextLeg.departure_time)}</span>}</time><span className={timelineStyles.transitMarker}><TrainIcon /></span></span>
             <span className={timelineStyles.rowBody}><strong>{leg.to_station}{nextLeg ? 'で乗り換え' : ''}</strong><small>{nextLeg ? `乗換 ${waitMinutes}分` : '到着'}</small></span>
           </span>
         </span>
       })}
     </button>
   )
+}
+
+function EventPinIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22s7-6.1 7-13a7 7 0 1 0-14 0c0 6.9 7 13 7 13Z" /><circle cx="12" cy="9" r="2.7" /></svg>
+}
+
+function TrainIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 28 24"><path d="M3.5 3.5h10.8c5.7 0 10.3 3.4 11.7 8.7.4 1.5-.7 3-2.3 3H3.5V3.5Z" /><path d="M9.5 4v7.5M15.5 4v7.5M3.5 11.5h22M3 20.5h22.5" /></svg>
 }
 
 function JourneyEditor({ journey, editable, onClose, onSaved }: { journey: Journey; editable: boolean; onClose: () => void; onSaved: (journey: Journey) => void }) {
