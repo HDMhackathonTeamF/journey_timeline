@@ -96,6 +96,14 @@
   color: #0789d1;
 }
 
+.timelineRow:has(.transitMarker) {
+  gap: 6px;
+}
+
+.timeAndMarker .transitMarker {
+  justify-self: end;
+}
+
 .eventMarker svg {
   width: 18px;
   height: 18px;
@@ -113,14 +121,18 @@
 }
 
 .transitMarker svg {
-  width: 22px;
-  height: 20px;
+  width: 20px;
+  height: 18px;
   overflow: visible;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.transitMarker svg path {
+  vector-effect: non-scaling-stroke;
 }
 
 .detailHeading {
@@ -154,8 +166,40 @@
 }
 
 .detailHeadingIcon.transitMarker svg {
-  width: 27px;
-  height: 23px;
+  width: 24px;
+  height: 21px;
+}
+
+.toolIcon {
+  display: inline-grid !important;
+  width: 30px !important;
+  height: 30px;
+  margin-right: 7px;
+  border-radius: 4px;
+  background: #dedede;
+  color: #62676b !important;
+  vertical-align: middle;
+}
+
+.addTools {
+  gap: 0;
+}
+
+.addTools > button {
+  display: flex;
+  align-items: center;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.toolIcon.eventMarker svg {
+  width: 21px;
+  height: 21px;
+}
+
+.toolIcon.transitMarker svg {
+  width: 22px;
+  height: 19px;
 }
 
 .rowBody {
@@ -196,8 +240,8 @@
 .rideRow > span:last-child {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 7px 0;
+  gap: 2px;
+  padding: 3px 0 5px;
 }
 
 .rideRow b {
@@ -223,6 +267,10 @@
   text-align: center;
 }
 
+.travelDurationBeforeTransfer {
+  transform: translateY(-16px);
+}
+
 .travelDuration::before,
 .travelDuration::after {
   content: '';
@@ -243,10 +291,52 @@
 }
 
 .transferTimes {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
   line-height: 1.05;
+  box-shadow: 0 0 0 1px #f1f1f1;
+  overflow: hidden;
+}
+
+.timeAndMarker:has(.transferTimes) {
+  align-items: start;
+}
+
+.timeAndMarker:has(.transferTimes) .transitMarker {
+  margin-top: 18px;
+  transform: none;
+}
+
+.timelineRow:has(.transferTimes) .rowBody {
+  padding-top: 18px;
+  transform: none;
+}
+
+.timelineRow:has(.transferTimes) {
+  margin-top: -16px;
+  margin-bottom: 0;
+}
+
+.timeAndMarker time.transferTimes {
+  min-width: 44px;
+  padding: 3px 5px;
+  font-size: 11px;
+}
+
+.transferTimes > span {
+  display: block;
+  width: 100%;
+}
+
+.transferTimes > span:first-child {
+  padding-bottom: 3px;
+  border-bottom: 2px solid rgb(255 255 255 / 45%);
+}
+
+.transferTimes > span:last-child {
+  padding-top: 3px;
 }
 
 @media (max-width: 680px) {
