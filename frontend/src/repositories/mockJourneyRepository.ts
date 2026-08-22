@@ -42,8 +42,9 @@ export const mockJourneyRepository: JourneyRepository = {
     })
   },
   async getJourney(id) { await wait(); return clone(findJourney(load(), id)) },
-  async createJourney(title) {
+  async createJourney(title, password) {
     await wait()
+    void password
     const journeys = load()
     const now = new Date().toISOString()
     const journey = { id: crypto.randomUUID(), title, created_at: now, updated_at: now, items: [] }
@@ -68,6 +69,11 @@ export const mockJourneyRepository: JourneyRepository = {
     if (!item || item.item_type !== 'event') throw new Error('予定が見つかりませんでした。')
     item.start_time = input.start_time; item.end_time = input.end_time; item.event = { title: input.title, duration_minutes: input.duration_minutes, address: input.address, memo: input.memo }; normalize(journey); save(journeys); return clone(item)
   },
+  async updateTransit(journeyId, itemId, input) {
+    await wait(); const journeys = load(); const journey = findJourney(journeys, journeyId); const item = journey.items.find((entry) => entry.id === itemId)
+    if (!item || item.item_type !== 'transit') throw new Error('移動が見つかりませんでした。')
+    item.start_time = input.route.departure_time; item.end_time = input.route.arrival_time; item.transit = { departure_location: input.departure_location, arrival_location: input.arrival_location, transit_data: input.route }; normalize(journey); save(journeys); return clone(item)
+  },
   async deleteItem(journeyId, itemId) { await wait(); const journeys = load(); const journey = findJourney(journeys, journeyId); journey.items = journey.items.filter((item) => item.id !== itemId); normalize(journey); save(journeys) },
   async moveItem(journeyId, itemId, direction) {
     await wait(); const journeys = load(); const journey = findJourney(journeys, journeyId); const index = journey.items.findIndex((item) => item.id === itemId); const target = index + direction
@@ -82,7 +88,6 @@ export const mockJourneyRepository: JourneyRepository = {
       return { ...route, departure_time: departure.toISOString(), arrival_time: arrival.toISOString(), legs: route.legs.map((leg) => ({ ...leg, from_station: from, to_station: to, departure_time: departure.toISOString(), arrival_time: arrival.toISOString() })) }
     }))
   },
+  async startEditSession(_journeyId, password) { await wait(); if (password !== 'demo') throw new Error('パスワードが違います。モックでは「demo」です。') },
   async reset() { await wait(); localStorage.removeItem(STORAGE_KEY) },
 }
-
-export const journeyRepository = mockJourneyRepository
