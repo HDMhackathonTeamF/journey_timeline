@@ -85,12 +85,12 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
 
         {editor && <aside className={styles.detailPane}>
           {editor.type === 'journey' && <JourneyEditor journey={journey} editable={isEditing} onClose={() => setEditor(null)} onSaved={(updated) => { setJourney(updated); showNotice('旅程名を保存しました') }} />}
-          {editor?.type === 'event' && <EventEditor item={selectedItem?.item_type === 'event' ? selectedItem : undefined} onCancel={() => setEditor(null)} onSave={async (input) => { setBusy(true); if (editor.itemId) await journeyRepository.updateEvent(journey.id, editor.itemId, input); else await journeyRepository.createEvent(journey.id, input, editor.index); await refresh(); setEditor(null); setBusy(false); showNotice('予定を保存しました') }} onDelete={editor.itemId ? async () => { if (!window.confirm('この予定を削除しますか？')) return; await journeyRepository.deleteItem(journey.id, editor.itemId!); await refresh(); setEditor(null) } : undefined} busy={busy} />}
-          {editor?.type === 'transit' && <TransitEditor item={selectedItem?.item_type === 'transit' ? selectedItem : undefined} onCancel={() => setEditor(null)} onSave={async (route, from, to) => { setBusy(true); if (editor.itemId) await journeyRepository.updateTransit(journey.id, editor.itemId, { route, departure_location: from, arrival_location: to }); else await journeyRepository.createTransit(journey.id, { route, departure_location: from, arrival_location: to }, editor.index); await refresh(); setEditor(null); setBusy(false); showNotice(editor.itemId ? '移動を更新しました' : '移動を追加しました') }} onDelete={editor.itemId ? async () => { if (!window.confirm('この移動を削除しますか？')) return; await journeyRepository.deleteItem(journey.id, editor.itemId!); await refresh(); setEditor(null) } : undefined} busy={busy} />}
+          {editor?.type === 'event' && <EventEditor item={selectedItem?.item_type === 'event' ? selectedItem : undefined} onCancel={() => setEditor(null)} onSave={async (input) => { setBusy(true); if (editor.itemId) await journeyRepository.updateEvent(journey.id, editor.itemId, input); else await journeyRepository.createEvent(journey.id, input, editor.index ?? journey.items.length); await refresh(); setEditor(null); setBusy(false); showNotice('予定を保存しました') }} onDelete={editor.itemId ? async () => { if (!window.confirm('この予定を削除しますか？')) return; await journeyRepository.deleteItem(journey.id, editor.itemId!); await refresh(); setEditor(null) } : undefined} busy={busy} />}
+          {editor?.type === 'transit' && <TransitEditor item={selectedItem?.item_type === 'transit' ? selectedItem : undefined} onCancel={() => setEditor(null)} onSave={async (route, from, to) => { setBusy(true); if (editor.itemId) await journeyRepository.updateTransit(journey.id, editor.itemId, { route, departure_location: from, arrival_location: to }); else await journeyRepository.createTransit(journey.id, { route, departure_location: from, arrival_location: to }, editor.index ?? journey.items.length); await refresh(); setEditor(null); setBusy(false); showNotice(editor.itemId ? '移動を更新しました' : '移動を追加しました') }} onDelete={editor.itemId ? async () => { if (!window.confirm('この移動を削除しますか？')) return; await journeyRepository.deleteItem(journey.id, editor.itemId!); await refresh(); setEditor(null) } : undefined} busy={busy} />}
           {editor?.type === 'detail' && selectedItem && <ItemDetail item={selectedItem} onClose={() => setEditor(null)} />}
         </aside>}
       </div>
-      {authOpen && <AuthDialog onClose={() => setAuthOpen(false)} onSuccess={() => { setAuthOpen(false); setIsEditing(true); showNotice('編集モードに切り替えました') }} />}
+      {authOpen && <AuthDialog onClose={() => setAuthOpen(false)} onSuccess={() => { setAuthOpen(false); setIsEditing(true); void refresh(); showNotice('編集モードに切り替えました') }} />}
       {notice && <div className={styles.toast} role="status">✓ {notice}</div>}
     </main>
   )
@@ -122,21 +122,7 @@ function TimelineCard({ item, selected, onClick }: { item: TimelineItem; selecte
       <span className={styles.cardBody}>
         <strong>{item.transit.departure_location} → {item.transit.arrival_location}</strong>
         <small>{route.duration_minutes}分 · ¥{route.total_fare} · 乗換{route.transfers_count}回</small>
-        <span className={transitStyles.transitLegs}>
-          {route.legs.map((leg, index) => {
-            const nextLeg = route.legs[index + 1]
-            const waitMinutes = nextLeg ? Math.max(0, Math.round((new Date(nextLeg.departure_time).getTime() - new Date(leg.arrival_time).getTime()) / 60_000)) : 0
-            return (
-              <span className={transitStyles.transitLegGroup} key={`${leg.line_name}-${leg.from_station}-${index}`}>
-                <span className={transitStyles.transitLeg}>
-                  <span className={transitStyles.legTimes}>{formatTime(leg.departure_time)}<i />{formatTime(leg.arrival_time)}</span>
-                  <span className={transitStyles.legRoute}><b>{leg.line_name}</b><span>{leg.from_station} → {leg.to_station}</span>{leg.platform && <small>{leg.platform}</small>}</span>
-                </span>
-                {nextLeg && <span className={transitStyles.transferRow}><b>乗換</b><span>{leg.to_station}で乗り換え</span><small>{waitMinutes}分</small></span>}
-              </span>
-            )
-          })}
-        </span>
+        <TransitLegDetails route={route} />
       </span>
       <span className={styles.chevron}>›</span>
     </button>
@@ -162,7 +148,16 @@ function EventEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extrac
 function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extract<TimelineItem, { item_type: 'transit' }>; onCancel: () => void; onSave: (route: TransitRoute, from: string, to: string) => void; onDelete?: () => void; busy: boolean }) {
   const [from, setFrom] = useState(item?.transit.departure_location ?? ''); const [to, setTo] = useState(item?.transit.arrival_location ?? ''); const [time, setTime] = useState(toInputDateTime(item?.start_time ?? null)); const [routes, setRoutes] = useState<TransitRoute[]>(item ? [item.transit.transit_data] : []); const [searching, setSearching] = useState(false)
   const search = async (event: FormEvent) => { event.preventDefault(); setSearching(true); setRoutes(await journeyRepository.searchTransit(from, to, time)); setSearching(false) }
-  return <div className={styles.editor}><div className={styles.editorTop}><div><p className={styles.sectionLabel}>TRANSIT</p><h2>{item ? '移動を編集' : '移動を追加'}</h2></div><button className={styles.close} type="button" onClick={onCancel}>×</button></div><form onSubmit={search}><label>出発地<input autoFocus value={from} onChange={(event) => setFrom(event.target.value)} placeholder="新浦安駅" required /></label><label>到着地<input value={to} onChange={(event) => setTo(event.target.value)} placeholder="秋葉原駅" required /></label><label>出発日時<input type="datetime-local" value={time} onChange={(event) => setTime(event.target.value)} /></label><div className={styles.formActions}>{onDelete && <button className={styles.deleteButton} type="button" onClick={onDelete}>削除</button>}<button className={styles.searchButton} type="submit" disabled={searching || !from.trim() || !to.trim()}>{searching ? '検索中…' : '経路を再検索'}</button></div></form>{routes.length > 0 && <div className={styles.routes}><p className={styles.sectionLabel}>{item ? 'SELECT ROUTE TO SAVE' : 'ROUTE OPTIONS'}</p>{routes.map((route) => <button type="button" key={route.id} disabled={busy} onClick={() => onSave(route, from, to)}><span><strong>{route.summary}</strong><small>{formatTime(route.departure_time)} → {formatTime(route.arrival_time)}</small></span><span><strong>{route.duration_minutes}分</strong><small>¥{route.total_fare} · 乗換{route.transfers_count}回</small></span></button>)}</div>}</div>
+  return <div className={styles.editor}><div className={styles.editorTop}><div><p className={styles.sectionLabel}>TRANSIT</p><h2>{item ? '移動を編集' : '移動を追加'}</h2></div><button className={styles.close} type="button" onClick={onCancel}>×</button></div><form onSubmit={search}><label>出発地<input autoFocus value={from} onChange={(event) => setFrom(event.target.value)} placeholder="新浦安駅" required /></label><label>到着地<input value={to} onChange={(event) => setTo(event.target.value)} placeholder="秋葉原駅" required /></label><label>出発日時<input type="datetime-local" value={time} onChange={(event) => setTime(event.target.value)} /></label><div className={styles.formActions}>{onDelete && <button className={styles.deleteButton} type="button" onClick={onDelete}>削除</button>}<button className={styles.saveButton} type="submit" disabled={searching || !from.trim() || !to.trim()}>{searching ? '検索中…' : '経路を再検索'}</button></div></form>{routes.length > 0 && <div className={styles.routes}><p className={styles.sectionLabel}>{item ? 'SELECT ROUTE TO SAVE' : 'ROUTE OPTIONS'}</p>{routes.map((route) => <button className={transitStyles.routeOption} type="button" key={route.id} disabled={busy} onClick={() => onSave(route, from, to)}><span className={transitStyles.routeOptionSummary}><span><strong>{route.summary}</strong><small>{formatTime(route.departure_time)} → {formatTime(route.arrival_time)}</small></span><span><strong>{route.duration_minutes}分</strong><small>{route.total_fare > 0 ? `¥${route.total_fare}` : '料金情報なし'} · 乗換{route.transfers_count}回</small></span></span><TransitLegDetails route={route} /></button>)}</div>}</div>
+}
+
+function TransitLegDetails({ route }: { route: TransitRoute }) {
+  const label = (lineName: string) => lineName === 'walk' ? '徒歩' : lineName === 'transit' ? '電車' : lineName
+  return <span className={transitStyles.transitLegs}>{route.legs.map((leg, index) => {
+    const nextLeg = route.legs[index + 1]
+    const waitMinutes = nextLeg ? Math.max(0, Math.round((new Date(nextLeg.departure_time).getTime() - new Date(leg.arrival_time).getTime()) / 60_000)) : 0
+    return <span className={transitStyles.transitLegGroup} key={`${leg.line_name}-${leg.from_station}-${index}`}><span className={transitStyles.transitLeg}><span className={transitStyles.legTimes}>{formatTime(leg.departure_time)}<i />{formatTime(leg.arrival_time)}</span><span className={transitStyles.legRoute}><b>{label(leg.line_name)}</b><span>{leg.from_station} → {leg.to_station}</span>{leg.platform && <small>{leg.platform}</small>}</span></span>{nextLeg && waitMinutes > 0 && <span className={transitStyles.transferRow}><b>待ち時間</b><span>{leg.to_station}</span><small>{waitMinutes}分</small></span>}</span>
+  })}</span>
 }
 
 function ItemDetail({ item, onClose }: { item: TimelineItem; onClose: () => void }) {
