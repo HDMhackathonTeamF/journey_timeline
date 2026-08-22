@@ -1,21 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Journey Timeline API")
-
-# CORS設定 (フロントエンドからのアクセスを許可)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"], # React Vite default port is 5173
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+import app.models  # noqa: F401
 from app.api.v1 import api_router
+from app.core.config import get_settings
+app = FastAPI(title="Journey Timeline API", version="0.1.0")
+app.add_middleware(CORSMiddleware, allow_origins=[get_settings().frontend_origin], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.include_router(api_router, prefix="/api/v1")
+
 
 @app.get("/health")
-def health_check():
+async def health() -> dict[str, str]:
     return {"status": "ok"}
-
-app.include_router(api_router)

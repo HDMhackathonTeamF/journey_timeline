@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-from app.api.v1 import journeys, items, transit
+
+from app.api.v1 import items, journeys, transit
 
 api_router = APIRouter()
 api_router.include_router(journeys.router)

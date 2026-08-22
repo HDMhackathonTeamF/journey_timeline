@@ -1,53 +1,49 @@
+from typing import Any
+from uuid import uuid4
+
 import httpx
-from fastapi import HTTPException
-from app.schemas.transit import TransitPlanResponse, TransitRoute, TransitLeg
 
-async def fetch_transit_plan(from_location: str, to_location: str, time_str: str | None = None) -> TransitPlanResponse:
-    url = "https://api.transit.ls8h.com/api/v1/plan"
-    params = {
-        "from": from_location,
-        "to": to_location,
-    }
-    if time_str:
-        params["time"] = time_str
+from app.core.config import get_settings
 
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(url, params=params, timeout=10.0)
-            response.raise_for_status()
-            data = response.json()
-            
-            # Since we don't have the exact API response shape for the proxy, 
-            # we'll mock the extraction logic or pass through if it matches our schema roughly.
-            # In a real scenario, we would map `data` fields to our TransitPlanResponse model.
-            # Here is a placeholder for the actual mapping logic.
-            # We assume for now the external API returns something we can loosely map or we just return it.
-            
-            # Example mapping if external data needs transformation:
-            routes = []
-            for ext_route in data.get("routes", []):
-                legs = []
-                for ext_leg in ext_route.get("legs", []):
-                    legs.append(TransitLeg(
-                        line_name=ext_leg.get("line_name", "Unknown Line"),
-                        platform=ext_leg.get("platform"),
-                        from_station=ext_leg.get("from_station", ""),
-                        to_station=ext_leg.get("to_station", ""),
-                        departure_time=ext_leg.get("departure_time"),
-                        arrival_time=ext_leg.get("arrival_time")
-                    ))
-                routes.append(TransitRoute(
-                    summary=ext_route.get("summary", ""),
-                    departure_time=ext_route.get("departure_time"),
-                    arrival_time=ext_route.get("arrival_time"),
-                    duration_minutes=ext_route.get("duration_minutes", 0),
-                    transfers_count=ext_route.get("transfers_count", 0),
-                    total_fare=ext_route.get("total_fare", 0),
-                    legs=legs
-                ))
-            
-            return TransitPlanResponse(routes=routes)
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(status_code=502, detail=f"Transit API error: {e.response.status_code}")
-    except httpx.RequestError as e:
-        raise HTTPException(status_code=502, detail="Failed to connect to Transit API")
+
+def _value(data: dict[str, Any], *keys: str, default: Any = None) -> Any:
+    for key in keys:
+        if key in data and data[key] is not None:
+            return data[key]
+    return default
+
+
+def normalize_routes(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    candidates = payload.get("routes") or payload.get("plans") or payload.get("results") or []
+    routes = []
+    for candidate in candidates:
+        legs_raw = candidate.get("legs") or candidate.get("segments") or []
+        legs = [{
+            "line_name": _value(leg, "line_name", "line", "route_name", default="移動"),
+            "platform": _value(leg, "platform", "track"),
+            "from_station": _value(leg, "from_station", "from", "departure_location", default=""),
+            "to_station": _value(leg, "to_station", "to", "arrival_location", default=""),
+            "departure_time": _value(leg, "departure_time", "departure"),
+            "arrival_time": _value(leg, "arrival_time", "arrival"),
+        } for leg in legs_raw]
+        routes.append({
+            "id": str(_value(candidate, "id", default=uuid4())),
+            "summary": _value(candidate, "summary", "name", default="経路候補"),
+            "departure_time": _value(candidate, "departure_time", "departure"),
+            "arrival_time": _value(candidate, "arrival_time", "arrival"),
+            "duration_minutes": int(_value(candidate, "duration_minutes", "duration", default=0)),
+            "transfers_count": int(_value(candidate, "transfers_count", "transfers", default=0)),
+            "total_fare": int(_value(candidate, "total_fare", "fare", default=0)),
+            "legs": legs,
+        })
+    return routes
+
+
+async def search_transit(from_location: str, to_location: str, time: str | None) -> list[dict[str, Any]]:
+    params = {"from": from_location, "to": to_location}
+    if time:
+        params["time"] = time
+    async with httpx.AsyncClient(timeout=15) as client:
+        response = await client.get(get_settings().transit_api_url, params=params)
+        response.raise_for_status()
+        return normalize_routes(response.json())

@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Query
-from app.schemas.transit import TransitPlanResponse
-from app.services.transit import fetch_transit_plan
+import httpx
+from fastapi import APIRouter, HTTPException, Query
 
-router = APIRouter(prefix="/api/v1/transit", tags=["Transit API Proxy"])
+from app.services.transit import search_transit
 
-@router.get("/plan", response_model=TransitPlanResponse)
-async def get_transit_plan(
-    from_location: str = Query(..., alias="from_location"),
-    to_location: str = Query(..., alias="to_location"),
-    time: str | None = None
-):
-    return await fetch_transit_plan(from_location, to_location, time)
+router = APIRouter(prefix="/transit", tags=["transit"])
+
+
+@router.get("/plan")
+async def plan(from_location: str = Query(min_length=1), to_location: str = Query(min_length=1), time: str | None = None) -> dict:
+    try:
+        return {"routes": await search_transit(from_location, to_location, time)}
+    except (httpx.HTTPError, ValueError, TypeError) as exc:
+        raise HTTPException(status_code=502, detail="経路検索サービスとの通信に失敗しました。") from exc
