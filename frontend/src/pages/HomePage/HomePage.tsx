@@ -62,7 +62,7 @@ export function HomePage() {
             <input
               type="text"
               className={styles.searchInput}
-              placeholder="旅程のタイトルで検索…"
+              placeholder="旅程のタイトルで検索"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
             />
@@ -156,15 +156,15 @@ export function HomePage() {
         <button className={styles.ghost} type="button" onClick={() => changeView('history')}>旅程を見る</button>
       </header>
       <section className={styles.hero}>
-        <p className={styles.eyebrow}>PLAN LESS. REMEMBER MORE.</p>
-        <h1><span>旅行計画</span>を<br /><em>タイムライン</em>に。</h1>
-        <p className={styles.lead}>予定と移動を、一本の線につなげよう。<br />迷わず動けて、誰とでもすぐ共有できます。</p>
-        <div className={styles.actions}>
-          <button className={styles.primary} type="button" onClick={() => navigate('/journeys/new')}>今すぐ作る <span>→</span></button>
-          <button className={styles.secondary} type="button" onClick={() => changeView('history')}>これまでの旅程を見る</button>
+        <div className={styles.heroCopy}>
+          <p className={styles.eyebrow}>YOUR JOURNEY, IN ONE LINE.</p>
+          <h1>旅行計画<small>を</small><br /><em>タイムライン</em><small>に。</small></h1>
+          <div className={styles.actions}>
+            <button className={styles.primary} type="button" onClick={() => navigate('/journeys/new')}>旅程を作る <span>→</span></button>
+            <button className={styles.secondary} type="button" onClick={() => changeView('history')}>みんなの旅程を見る</button>
+          </div>
         </div>
       </section>
-      <div className={styles.sun} aria-hidden="true"><span>🧳</span></div>
       <footer className={styles.homeFooter}>
         {isMockDataSource ? (
           <p className={styles.demo}>FRONTEND MOCK · 編集パスワードは “demo”</p>
