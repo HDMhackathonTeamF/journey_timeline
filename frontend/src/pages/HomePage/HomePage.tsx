@@ -12,6 +12,15 @@ export function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
+    const syncViewWithLocation = () => {
+      setView(new URLSearchParams(window.location.search).get('view') === 'history' ? 'history' : 'hero')
+    }
+
+    window.addEventListener('popstate', syncViewWithLocation)
+    return () => window.removeEventListener('popstate', syncViewWithLocation)
+  }, [])
+
+  useEffect(() => {
     if (view !== 'history') return
     let active = true
     setLoading(true)
@@ -28,8 +37,7 @@ export function HomePage() {
   }, [view, searchQuery])
 
   const changeView = (next: 'hero' | 'history') => {
-    setView(next)
-    window.history.replaceState({}, '', next === 'history' ? '/?view=history' : '/')
+    navigate(next === 'history' ? '/?view=history' : '/')
   }
 
   if (view === 'history') return (

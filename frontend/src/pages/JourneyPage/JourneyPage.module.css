@@ -386,7 +386,8 @@
 }
 
 .routes {
-    margin-top: 30px
+    margin-top: 30px;
+    container-type: inline-size
 }
 
 .routes>button {
