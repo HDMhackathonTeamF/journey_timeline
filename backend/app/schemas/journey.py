@@ -11,7 +11,8 @@ class JourneyCreate(JourneyBase):
     password: Optional[str] = None
 
 class JourneyUpdate(BaseModel):
-    title: str
+    title: Optional[str] = None
+    password: Optional[str] = None
 
 class JourneyResponse(BaseModel):
     id: UUID
