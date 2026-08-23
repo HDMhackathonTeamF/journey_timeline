@@ -713,6 +713,94 @@
     }
 }
 
+.dateTimeField {
+    margin-bottom: 18px
+}
+
+.timeTypeRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 8px
+}
+
+.fieldLabel {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800
+}
+
+.timeTypeTabs {
+    display: inline-flex;
+    padding: 2px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: #e9e6df
+}
+
+.timeTypeTab {
+    min-width: 52px;
+    border: 0;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--muted);
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer
+}
+
+.timeTypeTab:hover {
+    color: var(--ink);
+    background: rgb(255 255 255 / 55%)
+}
+
+.timeTypeTabActive,
+.timeTypeTabActive:hover {
+    background: var(--ink);
+    color: white;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 18%)
+}
+
+.timeInputWrap {
+    display: flex;
+    align-items: center;
+    gap: 10px
+}
+
+.timeInputWrap input {
+    min-width: 0;
+    flex: 1;
+    margin: 0
+}
+
+.clearTimeButton {
+    flex: 0 0 auto;
+    border: 1px solid var(--line-strong);
+    border-radius: 3px;
+    background: var(--surface);
+    color: var(--muted);
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer
+}
+
+.clearTimeButton:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: #eeeae1
+}
+
+.clearTimeButton:disabled {
+    border-color: var(--line);
+    background: transparent;
+    color: var(--muted);
+    cursor: default;
+    opacity: .45
+}
+
 .printHeader {
     display: none
 }

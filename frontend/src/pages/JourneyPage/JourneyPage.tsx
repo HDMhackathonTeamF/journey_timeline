@@ -258,31 +258,20 @@ function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extr
   const [from, setFrom] = useState(item?.transit.departure_location ?? '')
   const [to, setTo] = useState(item?.transit.arrival_location ?? '')
   const [searchType, setSearchType] = useState<'departure' | 'arrival'>('departure')
-  const [departureTime, setDepartureTime] = useState(toInputDateTime(item?.start_time ?? null))
-  const [arrivalTime, setArrivalTime] = useState(toInputDateTime(item?.end_time ?? null))
+  const [time, setTime] = useState(toInputDateTime(item?.start_time ?? item?.end_time ?? null))
   const [routes, setRoutes] = useState<TransitRoute[]>(item ? [item.transit.transit_data] : [])
   const [searching, setSearching] = useState(false)
   const [error, setError] = useState('')
 
-  const activeTime = searchType === 'arrival' ? arrivalTime : departureTime
-  const setActiveTime = (val: string) => {
-    if (searchType === 'arrival') {
-      setArrivalTime(val)
-    } else {
-      setDepartureTime(val)
-    }
-  }
-
   const handleSearch = async (targetType?: 'departure' | 'arrival') => {
     const type = targetType ?? searchType
-    const timeToSend = type === 'arrival' ? arrivalTime : departureTime
     if (!from.trim() || !to.trim()) return
 
     setSearchType(type)
     setSearching(true)
     setError('')
     try {
-      const results = await journeyRepository.searchTransit(from.trim(), to.trim(), timeToSend, type)
+      const results = await journeyRepository.searchTransit(from.trim(), to.trim(), time, type)
       setRoutes(results)
       if (results.length === 0) {
         setError('該当する経路が見つかりませんでした。')
@@ -311,7 +300,7 @@ function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extr
 
         <div className={styles.dateTimeField}>
           <div className={styles.timeTypeRow}>
-            <span className={styles.fieldLabel}>{searchType === 'departure' ? '出発日時' : '到着日時'}</span>
+            <span className={styles.fieldLabel}>日時</span>
             <div className={styles.timeTypeTabs}>
               <button
                 type="button"
@@ -332,19 +321,18 @@ function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extr
           <div className={styles.timeInputWrap}>
             <input
               type="datetime-local"
-              value={activeTime}
-              onChange={(event) => setActiveTime(event.target.value)}
+              value={time}
+              onChange={(event) => setTime(event.target.value)}
             />
-            {activeTime && (
-              <button
-                type="button"
-                className={styles.clearTimeButton}
-                onClick={() => setActiveTime('')}
-                title="日時指定をクリア"
-              >
-                クリア
-              </button>
-            )}
+            <button
+              type="button"
+              className={styles.clearTimeButton}
+              onClick={() => setTime('')}
+              title="日時指定をクリア"
+              disabled={!time}
+            >
+              クリア
+            </button>
           </div>
         </div>
 
