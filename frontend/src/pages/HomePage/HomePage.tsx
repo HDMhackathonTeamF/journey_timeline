@@ -62,7 +62,7 @@ export function HomePage() {
             <input
               type="text"
               className={styles.searchInput}
-              placeholder="旅程のタイトルで検索…"
+              placeholder="旅程のタイトルで検索"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
             />
