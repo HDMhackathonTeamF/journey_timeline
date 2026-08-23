@@ -12,6 +12,7 @@ class TransitLeg(BaseModel):
 class TransitRoute(BaseModel):
     summary: str
     strategy_type: Optional[str] = None
+    tags: List[str] = []
     departure_time: Optional[str] = None
     arrival_time: Optional[str] = None
     duration_minutes: int

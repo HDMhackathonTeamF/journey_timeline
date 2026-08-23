@@ -80,17 +80,23 @@ async def fetch_single_plan(client: httpx.AsyncClient, url: str, params: dict, s
             
             summary_labels = {
                 "fastest": "最速ルート",
-                "lowestFare": "料金が安いルート",
-                "fewestTransfers": "乗換が少ないルート",
+                "fewestTransfers": "乗換最少ルート",
             }
+            tag_mappings = {
+                "fastest": "fastest",
+                "fewestTransfers": "fewest_transfers",
+            }
+
+            tag = tag_mappings.get(strategy, "fastest")
             extracted_routes.append(TransitRoute(
                 summary=summary_labels.get(strategy, "おすすめルート"),
                 strategy_type=strategy,
+                tags=[tag],
                 departure_time=_format_secs(journey.get("departureSecs"), service_date),
                 arrival_time=_format_secs(journey.get("arrivalSecs"), service_date),
                 duration_minutes=int(journey.get("durationSecs", 0) // 60),
                 transfers_count=int(journey.get("transferCount", 0)),
-                total_fare=0, # Fare was empty in tests, placeholder for now
+                total_fare=0,
                 legs=legs
             ))
             
@@ -163,15 +169,16 @@ async def fetch_transit_plan(
                 params["avoidWalk"] = str(avoid_walk).lower()
 
                 
-            # 4. Parallel fetching for different strategies
-            strategies = ["fastest", "lowestFare", "fewestTransfers"]
+            # 4. Parallel fetching for the 2 strategies: fastest, fewestTransfers
+            strategies = ["fastest", "fewestTransfers"]
             tasks = [fetch_single_plan(client, plan_url, params, s, service_date) for s in strategies]
             
             results = await asyncio.gather(*tasks)
             
-            # Flatten and remove identical routes returned for multiple strategies.
-            all_routes = []
-            seen_routes = set()
+            # Merge routes: if identical route is found, merge its tags (e.g. fastest + fewest_transfers)
+            all_routes: list[TransitRoute] = []
+            route_map: dict[tuple, TransitRoute] = {}
+
             for r in results:
                 for route in r:
                     route_key = (
@@ -179,10 +186,14 @@ async def fetch_transit_plan(
                         route.arrival_time,
                         tuple((leg.line_name, leg.from_station, leg.to_station) for leg in route.legs),
                     )
-                    if route_key in seen_routes:
-                        continue
-                    seen_routes.add(route_key)
-                    all_routes.append(route)
+                    if route_key in route_map:
+                        existing = route_map[route_key]
+                        for t in route.tags:
+                            if t not in existing.tags:
+                                existing.tags.append(t)
+                    else:
+                        route_map[route_key] = route
+                        all_routes.append(route)
 
             return TransitPlanResponse(routes=all_routes)
             

@@ -10,6 +10,7 @@ export type TransitLeg = {
 export type TransitRoute = {
   id: string
   summary: string
+  tags?: ('fastest' | 'fewest_transfers' | 'cheapest' | string)[]
   departure_time: string
   arrival_time: string
   duration_minutes: number
