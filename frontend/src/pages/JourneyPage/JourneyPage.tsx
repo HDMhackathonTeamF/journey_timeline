@@ -57,6 +57,13 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
     catch { window.prompt('このURLをコピーしてください', url) }
   }
 
+  const exportPdf = () => {
+    const originalTitle = document.title
+    document.title = `${journey.title} - 旅程タイムライン`
+    window.print()
+    document.title = originalTitle
+  }
+
   return (
     <main className={styles.page}>
       <header className={styles.header}>
@@ -65,7 +72,7 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
         <div className={styles.headerActions}>
           {!isEditing && <button type="button" onClick={() => setAuthOpen(true)}>編集する</button>}
           <button type="button" onClick={share}>↗ 共有</button>
-          <button type="button">＋ 書き出し</button>
+          <button type="button" onClick={exportPdf} title="PDFとして保存・印刷">＋ 書き出し</button>
         </div>
       </header>
 
@@ -73,6 +80,10 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
         {isEditing && <aside className={styles.tools}><p className={styles.sectionLabel}>ADD TO PLAN</p><button type="button" onClick={() => setEditor({ type: 'event' })}><span>●</span> 予定を追加</button><button type="button" onClick={() => setEditor({ type: 'transit' })}><span>⇄</span> 移動を追加</button><div className={styles.toolBottom}><button type="button" onClick={() => { setEditor(null); setIsEditing(false) }}>編集を終了</button><button className={styles.dangerText} type="button" onClick={deleteJourney}>旅程を削除</button></div></aside>}
 
         <section className={styles.timelinePane}>
+          <div className={styles.printHeader}>
+            <span className={styles.printBrand}>Journey Timeline</span>
+            <span className={styles.printDate}>{new Date().toLocaleDateString('ja-JP')} 出力</span>
+          </div>
           <div className={styles.paneHeading}><div><p className={styles.sectionLabel}>ITINERARY</p><h1><button className={panelStyles.journeyTitleButton} type="button" onClick={() => setEditor({ type: 'journey' })}>{journey.title}</button></h1></div><span>{journey.items.length} stops</span></div>
           {groups.length === 0 ? <div className={styles.emptyTimeline}><span>○</span><h2>まだ予定がありません</h2><p>旅の最初の目的地を追加しましょう。</p>{isEditing && <button type="button" onClick={() => setEditor({ type: 'event' })}>予定を追加する</button>}</div> : groups.map((group) => (
             <section className={styles.day} key={group.key}><h2>{group.label}</h2><div className={`${styles.timelineLine} ${timelineStyles.timelineLine}`}>{group.items.map((item) => (
