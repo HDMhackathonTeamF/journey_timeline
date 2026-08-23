@@ -146,7 +146,7 @@ function TimelineCard({ item, selected, onClick }: { item: TimelineItem; selecte
     <button type="button" className={`${styles.timelineCard} ${styles.transitCard} ${timelineStyles.referenceCard} ${selected ? styles.selected : ''}`} onClick={onClick}>
       <span className={timelineStyles.timelineRow}>
         <span className={timelineStyles.timeAndMarker}><time>{formatTime(firstLeg?.departure_time ?? item.start_time)}</time><span className={timelineStyles.transitMarker}><TrainIcon /></span></span>
-        <span className={timelineStyles.rowBody}><strong>{firstLeg?.from_station ?? item.transit.departure_location}</strong><small>{route.duration_minutes}分 · ¥{route.total_fare} · 乗換{route.transfers_count}回</small></span>
+        <span className={timelineStyles.rowBody}><strong>{firstLeg?.from_station ?? item.transit.departure_location}</strong><small>{route.duration_minutes}分 · 乗換{route.transfers_count}回</small></span>
       </span>
       {route.legs.map((leg, index) => {
         const nextLeg = route.legs[index + 1]
@@ -353,15 +353,46 @@ function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extr
       {routes.length > 0 && (
         <div className={styles.routes}>
           <p className={styles.sectionLabel}>{item ? 'SELECT ROUTE TO SAVE' : 'ROUTE OPTIONS'}</p>
-          {routes.map((route) => (
-            <button className={transitStyles.routeOption} type="button" key={route.id} disabled={busy} onClick={() => onSave(route, from, to)}>
-              <span className={transitStyles.routeOptionSummary}>
-                <span><strong>{route.summary}</strong><small>{formatTime(route.departure_time)} → {formatTime(route.arrival_time)}</small></span>
-                <span><strong>{route.duration_minutes}分</strong><small>{route.total_fare > 0 ? `¥${route.total_fare}` : '料金情報なし'} · 乗換{route.transfers_count}回</small></span>
-              </span>
-              <TransitLegDetails route={route} />
-            </button>
-          ))}
+          {routes.map((route) => {
+            const badges = getRouteBadges(route)
+            return (
+              <button
+                className={transitStyles.routeOptionCard}
+                type="button"
+                key={route.id}
+                disabled={busy}
+                onClick={() => onSave(route, from, to)}
+              >
+                <div className={transitStyles.cardHeader}>
+                  <div className={transitStyles.badgeRow}>
+                    {badges.map((b, index) => (
+                      <span key={index} className={`${transitStyles.strategyBadge} ${b.className}`}>
+                        {b.label}
+                      </span>
+                    ))}
+                  </div>
+                  <span className={transitStyles.timeRange}>
+                    {formatTime(route.departure_time)} → {formatTime(route.arrival_time)}
+                  </span>
+                </div>
+
+                <div className={transitStyles.metricsRow}>
+                  <div className={transitStyles.metricItem}>
+                    <span className={transitStyles.metricLabel}>所要時間</span>
+                    <strong className={transitStyles.metricValue}>{route.duration_minutes}分</strong>
+                  </div>
+                  <div className={transitStyles.metricItem}>
+                    <span className={transitStyles.metricLabel}>乗換</span>
+                    <strong className={transitStyles.metricValue}>
+                      {route.transfers_count === 0 ? 'なし (直通)' : `${route.transfers_count}回`}
+                    </strong>
+                  </div>
+                </div>
+
+                <TransitLegDetails route={route} />
+              </button>
+            )
+          })}
         </div>
       )}
     </div>
@@ -378,8 +409,23 @@ function TransitLegDetails({ route }: { route: TransitRoute }) {
 
 const formatTransitLineName = (lineName: string) => lineName === 'walk' ? '徒歩' : lineName === 'transit' ? '電車' : lineName
 
+function getRouteBadges(route: TransitRoute): { label: string; className: string }[] {
+  const badges: { label: string; className: string }[] = []
+  const tags = route.tags ?? []
+  if (tags.includes('fastest') || route.summary.includes('最速')) {
+    badges.push({ label: '⏱ 最速', className: transitStyles.fastest })
+  }
+  if (tags.includes('fewest_transfers') || route.summary.includes('乗換') || route.summary.includes('直通')) {
+    badges.push({ label: '🔄 乗換最少', className: transitStyles.fewest_transfers })
+  }
+  if (badges.length === 0) {
+    badges.push({ label: 'おすすめ', className: transitStyles.fastest })
+  }
+  return badges
+}
+
 function ItemDetail({ item, onClose }: { item: TimelineItem; onClose: () => void }) {
-  return <div className={styles.editor}><div className={styles.editorTop}><p className={styles.sectionLabel}>DETAIL</p><button className={styles.close} type="button" onClick={onClose}>×</button></div>{item.item_type === 'event' ? <><div className={timelineStyles.detailHeading}><span className={`${timelineStyles.detailHeadingIcon} ${timelineStyles.eventMarker}`}><EventPinIcon /></span><h2>{item.event.title}</h2></div><dl><dt>時間</dt><dd>{formatTime(item.start_time)} — {formatTime(item.end_time)}</dd><dt>住所</dt><dd>{item.event.address ?? '未設定'}</dd><dt>メモ</dt><dd>{item.event.memo ?? 'なし'}</dd></dl></> : <><div className={timelineStyles.detailHeading}><span className={`${timelineStyles.detailHeadingIcon} ${timelineStyles.transitMarker}`}><TrainIcon /></span><h2>{item.transit.departure_location} → {item.transit.arrival_location}</h2></div><div className={styles.routeSummary}><strong>{item.transit.transit_data.duration_minutes}分</strong><span>¥{item.transit.transit_data.total_fare}</span><span>乗換 {item.transit.transit_data.transfers_count}回</span></div></>}</div>
+  return <div className={styles.editor}><div className={styles.editorTop}><p className={styles.sectionLabel}>DETAIL</p><button className={styles.close} type="button" onClick={onClose}>×</button></div>{item.item_type === 'event' ? <><div className={timelineStyles.detailHeading}><span className={`${timelineStyles.detailHeadingIcon} ${timelineStyles.eventMarker}`}><EventPinIcon /></span><h2>{item.event.title}</h2></div><dl><dt>時間</dt><dd>{formatTime(item.start_time)} — {formatTime(item.end_time)}</dd><dt>住所</dt><dd>{item.event.address ?? '未設定'}</dd><dt>メモ</dt><dd>{item.event.memo ?? 'なし'}</dd></dl></> : <><div className={timelineStyles.detailHeading}><span className={`${timelineStyles.detailHeadingIcon} ${timelineStyles.transitMarker}`}><TrainIcon /></span><h2>{item.transit.departure_location} → {item.transit.arrival_location}</h2></div><div className={styles.routeSummary}><strong>{item.transit.transit_data.duration_minutes}分</strong><span>乗換 {item.transit.transit_data.transfers_count}回</span></div></>}</div>
 }
 
 function AuthDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {

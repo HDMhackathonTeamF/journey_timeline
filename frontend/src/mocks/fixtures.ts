@@ -2,24 +2,31 @@ import type { Journey, TransitRoute } from '../types/journey'
 
 export const transitRoutes: TransitRoute[] = [
   {
-    id: 'route-fast', summary: '最速ルート', departure_time: '2026-08-19T09:08:00.000+09:00', arrival_time: '2026-08-19T10:02:00.000+09:00', duration_minutes: 54, transfers_count: 2, total_fare: 390,
+    id: 'route-fast',
+    summary: '最速ルート',
+    tags: ['fastest'],
+    departure_time: '2026-08-19T09:08:00.000+09:00',
+    arrival_time: '2026-08-19T09:46:00.000+09:00',
+    duration_minutes: 38,
+    transfers_count: 2,
+    total_fare: 0,
     legs: [
-      { line_name: 'JR京葉線', platform: '1番線', from_station: '新浦安駅', to_station: '八丁堀駅', departure_time: '2026-08-19T09:08:00.000+09:00', arrival_time: '2026-08-19T09:27:00.000+09:00' },
-      { line_name: '東京メトロ日比谷線', platform: '2番線', from_station: '八丁堀駅', to_station: '茅場町駅', departure_time: '2026-08-19T09:34:00.000+09:00', arrival_time: '2026-08-19T09:36:00.000+09:00' },
-      { line_name: '東京メトロ東西線', platform: '4番線', from_station: '茅場町駅', to_station: '秋葉原駅', departure_time: '2026-08-19T09:43:00.000+09:00', arrival_time: '2026-08-19T10:02:00.000+09:00' },
+      { line_name: 'JR京葉線 (快速)', platform: '1番線', from_station: '新浦安駅', to_station: '八丁堀駅', departure_time: '2026-08-19T09:08:00.000+09:00', arrival_time: '2026-08-19T09:21:00.000+09:00' },
+      { line_name: '東京メトロ日比谷線', platform: '2番線', from_station: '八丁堀駅', to_station: '茅場町駅', departure_time: '2026-08-19T09:25:00.000+09:00', arrival_time: '2026-08-19T09:27:00.000+09:00' },
+      { line_name: 'つくばエクスプレス', platform: '1番線', from_station: '南千住駅', to_station: '秋葉原駅', departure_time: '2026-08-19T09:37:00.000+09:00', arrival_time: '2026-08-19T09:46:00.000+09:00' },
     ],
   },
   {
-    id: 'route-easy', summary: '乗換なし', departure_time: '2026-08-19T09:15:00.000+09:00', arrival_time: '2026-08-19T10:10:00.000+09:00', duration_minutes: 55, transfers_count: 0, total_fare: 520,
+    id: 'route-easy',
+    summary: '乗換最少ルート',
+    tags: ['fewest_transfers'],
+    departure_time: '2026-08-19T09:15:00.000+09:00',
+    arrival_time: '2026-08-19T10:07:00.000+09:00',
+    duration_minutes: 52,
+    transfers_count: 0,
+    total_fare: 0,
     legs: [
-      { line_name: 'JR直通快速', platform: '2番線', from_station: '新浦安駅', to_station: '秋葉原駅', departure_time: '2026-08-19T09:15:00.000+09:00', arrival_time: '2026-08-19T10:10:00.000+09:00' },
-    ],
-  },
-  {
-    id: 'route-cheap', summary: '料金が安い', departure_time: '2026-08-19T09:20:00.000+09:00', arrival_time: '2026-08-19T10:08:00.000+09:00', duration_minutes: 48, transfers_count: 1, total_fare: 280,
-    legs: [
-      { line_name: 'JR京葉線', platform: '1番線', from_station: '新浦安駅', to_station: '東京駅', departure_time: '2026-08-19T09:20:00.000+09:00', arrival_time: '2026-08-19T09:43:00.000+09:00' },
-      { line_name: 'JR山手線', platform: '4番線', from_station: '東京駅', to_station: '秋葉原駅', departure_time: '2026-08-19T09:53:00.000+09:00', arrival_time: '2026-08-19T10:08:00.000+09:00' },
+      { line_name: 'JR直通快速 (乗換なし)', platform: '2番線', from_station: '新浦安駅', to_station: '秋葉原駅', departure_time: '2026-08-19T09:15:00.000+09:00', arrival_time: '2026-08-19T10:07:00.000+09:00' },
     ],
   },
 ]
