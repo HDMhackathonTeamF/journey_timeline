@@ -1,0 +1,52 @@
+import type { Journey, TransitRoute } from '../types/journey'
+
+export const transitRoutes: TransitRoute[] = [
+  {
+    id: 'route-fast',
+    summary: '最速ルート',
+    tags: ['fastest'],
+    departure_time: '2026-08-19T09:08:00.000+09:00',
+    arrival_time: '2026-08-19T09:46:00.000+09:00',
+    duration_minutes: 38,
+    transfers_count: 2,
+    total_fare: 0,
+    legs: [
+      { line_name: 'JR京葉線 (快速)', platform: '1番線', from_station: '新浦安駅', to_station: '八丁堀駅', departure_time: '2026-08-19T09:08:00.000+09:00', arrival_time: '2026-08-19T09:21:00.000+09:00' },
+      { line_name: '東京メトロ日比谷線', platform: '2番線', from_station: '八丁堀駅', to_station: '茅場町駅', departure_time: '2026-08-19T09:25:00.000+09:00', arrival_time: '2026-08-19T09:27:00.000+09:00' },
+      { line_name: 'つくばエクスプレス', platform: '1番線', from_station: '南千住駅', to_station: '秋葉原駅', departure_time: '2026-08-19T09:37:00.000+09:00', arrival_time: '2026-08-19T09:46:00.000+09:00' },
+    ],
+  },
+  {
+    id: 'route-easy',
+    summary: '乗換最少ルート',
+    tags: ['fewest_transfers'],
+    departure_time: '2026-08-19T09:15:00.000+09:00',
+    arrival_time: '2026-08-19T10:07:00.000+09:00',
+    duration_minutes: 52,
+    transfers_count: 0,
+    total_fare: 0,
+    legs: [
+      { line_name: 'JR直通快速 (乗換なし)', platform: '2番線', from_station: '新浦安駅', to_station: '秋葉原駅', departure_time: '2026-08-19T09:15:00.000+09:00', arrival_time: '2026-08-19T10:07:00.000+09:00' },
+    ],
+  },
+]
+
+export const fixtureJourneys: Journey[] = [
+  {
+    id: 'tokyo-day-trip', title: '東京1日観光プラン', created_at: '2026-08-19T09:00:00.000+09:00', updated_at: '2026-08-19T09:00:00.000+09:00',
+    items: [
+      { id: '11111111-1111-1111-1111-111111111111', item_type: 'event', order_index: 0, start_time: '2026-08-19T09:00:00.000+09:00', end_time: '2026-08-19T09:08:00.000+09:00', event: { title: 'ホテル出発', duration_minutes: 8, address: '千葉県浦安市舞浜1-1', memo: '忘れ物がないかチェック' }, transit: null },
+      { id: '22222222-2222-2222-2222-222222222222', item_type: 'transit', order_index: 1, start_time: transitRoutes[0].departure_time, end_time: transitRoutes[0].arrival_time, event: null, transit: { departure_location: '新浦安駅', arrival_location: '秋葉原駅', transit_data: { ...transitRoutes[0], id: 'tokyo-route' } } },
+      { id: 'tokyo-event-2', item_type: 'event', order_index: 2, start_time: '2026-08-19T11:00:00.000+09:00', end_time: '2026-08-19T12:00:00.000+09:00', event: { title: '国立科学博物館', duration_minutes: 60, address: '東京都台東区上野公園7-20', memo: '特別展を観覧' }, transit: null },
+    ],
+  },
+  {
+    id: 'kyoto-two-days', title: '京都、朝と夕暮れを歩く2日間', created_at: '2026-07-02T03:00:00.000Z', updated_at: '2026-08-18T09:15:00.000Z',
+    items: [
+      { id: 'kyoto-event-1', item_type: 'event', order_index: 0, start_time: '2026-09-12T00:30:00.000Z', end_time: '2026-09-12T02:00:00.000Z', event: { title: '清水寺', duration_minutes: 90, address: '京都市東山区清水1丁目294', memo: '朝のうちに到着' }, transit: null },
+      { id: 'kyoto-event-2', item_type: 'event', order_index: 1, start_time: '2026-09-13T06:00:00.000Z', end_time: '2026-09-13T08:00:00.000Z', event: { title: '嵐山を散策', duration_minutes: 120, address: '京都市右京区嵯峨', memo: '渡月橋から竹林へ' }, transit: null },
+    ],
+  },
+  { id: 'empty-journey', title: 'まだ白紙の週末旅行', created_at: '2026-08-01T00:00:00.000Z', updated_at: '2026-08-10T06:00:00.000Z', items: [] },
+  { id: 'untimed-journey', title: 'いつか行きたい場所メモ', created_at: '2026-06-01T00:00:00.000Z', updated_at: '2026-08-08T06:00:00.000Z', items: [{ id: 'untimed-event', item_type: 'event', order_index: 0, start_time: null, end_time: null, event: { title: '海辺の小さな美術館', duration_minutes: null, address: '住所はあとで調べる', memo: '晴れた日に行きたい' }, transit: null }] },
+]

@@ -23,18 +23,49 @@ mise install
 ```sh
 pnpm install
 ```
-### 4. それぞれの起動の仕方を覚える
+### 4. 起動方法
 - このプロジェクトにはバックエンドとフロントエンドがあります
     - バックエンドはサーバ側のプログラム，フロントエンドは主にブラウザ上で見る画面のプログラムがあります
-#### フロントエンド側の起動
-以下を実行して出てくるURLを開くと確認できます
-```sh
-cd frontend # frontendのフォルダに入る
-pnpm run dev # サーバの起動
+
+#### フロントエンドだけをモックで起動
+```powershell
+Copy-Item frontend\.env.example frontend\.env
+mise run dev
 ```
-#### バックエンド側の起動
-```sh
-cd backend # backendのフォルダに入る
+*(または `cd frontend` して `pnpm dev`)*
+
+#### バックエンドと接続して起動
+リポジトリ直下で実行します。
+```powershell
+Copy-Item .env.example .env
+Copy-Item frontend\.env.example frontend\.env
+mise run api:db
+```
+
+`frontend/.env` の `VITE_DATA_SOURCE` を `api` に変更します。
+
+バックエンドをマイグレーションして起動します：
+```powershell
+cd backend
 uv sync
-uv run fastapi dev
+cd ..
+mise run api:migrate
+mise run api:dev
 ```
+
+別のターミナルでフロントエンドを起動します：
+```powershell
+mise run dev
+```
+
+---
+
+### 便利な mise タスク一覧
+リポジトリ直下で以下のコマンドが使用できます：
+- `mise run dev`: フロントエンド開発サーバーの起動
+- `mise run build`: フロントエンドの型チェック＆本番ビルド
+- `mise run lint`: ESLint による静的チェック
+- `mise run check`: フロントエンド＆バックエンドの一括構文・ビルド検証
+- `mise run api:db`: PostgreSQL データベースの起動
+- `mise run api:migrate`: DB マイグレーションの実行
+- `mise run api:dev`: FastAPI サーバーの起動

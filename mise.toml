@@ -4,3 +4,31 @@ node = "24"
 pnpm = "11"
 python = "3"
 uv = "latest"
+
+[tasks."dev"]
+description = "フロントエンド開発サーバーを起動"
+run = "pnpm --dir frontend dev"
+
+[tasks."build"]
+description = "フロントエンドの型チェック＆本番ビルドを実行"
+run = "pnpm --dir frontend build"
+
+[tasks."lint"]
+description = "フロントエンドの ESLint チェックを実行"
+run = "pnpm --dir frontend lint"
+
+[tasks."api:db"]
+description = "PostgreSQL データベースコンテナを起動"
+run = "docker compose up -d db"
+
+[tasks."api:migrate"]
+description = "Alembic DBマイグレーションを実行"
+run = "uv --directory backend run alembic upgrade head"
+
+[tasks."api:dev"]
+description = "FastAPI バックエンド開発サーバーを起動"
+run = "uv --directory backend run fastapi dev app/main.py"
+
+[tasks."check"]
+description = "フロントエンド＆バックエンドの一括構文・ビルド検証"
+run = "pnpm --dir frontend build && uv --directory backend run python -c \"import app.main; print('Backend syntax OK')\""

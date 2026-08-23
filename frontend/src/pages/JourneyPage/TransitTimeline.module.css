@@ -1,0 +1,367 @@
+.expandedTransitCard {
+  align-items: start;
+}
+
+.transitLegs,
+.transitLegGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.transitLegs {
+  margin-top: 8px;
+  padding-top: 5px;
+  border-top: 1px solid var(--line);
+}
+
+.transitLeg {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 10px;
+  padding: 9px 0;
+}
+
+.legTimes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--blue);
+  font-size: 10px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+.legTimes i {
+  display: block;
+  width: 1px;
+  height: 15px;
+  background: var(--blue);
+}
+
+.legRoute {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 10px;
+  min-width: 0;
+}
+
+.legRoute b {
+  grid-column: 1 / -1;
+  font-size: 12px;
+}
+
+.legRoute > span {
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.legRoute small {
+  font-size: 10px;
+}
+
+.transferRow {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  background: var(--blue-soft);
+  font-size: 10px;
+}
+
+.transferRow b {
+  color: var(--blue);
+}
+
+.transferRow small {
+  color: var(--muted);
+}
+
+.routeOption {
+  display: block !important;
+  text-align: left;
+}
+
+.routeOptionSummary {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.routeOption .transitLegs {
+  margin-top: 12px;
+  text-align: left;
+}
+
+.routeOption .transitLeg,
+.routeOption .legRoute,
+.routeOption .transferRow {
+  display: grid;
+}
+
+.routeOption .legTimes,
+.routeOption .transitLegGroup {
+  display: flex;
+}
+
+/* Route Option Cards (3 distinct strategies with prominent fare) */
+.routeOptionCard {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 190px;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.routeOptionSummaryBlock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  padding: 4px 24px 4px 2px;
+}
+
+.routeOptionCard .transitLegs {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-self: stretch;
+  gap: 0;
+  margin-top: 0;
+  padding: 0 0 0 24px;
+  border-top: 0;
+  border-left: 1px solid var(--line);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.routeOptionCard .transitLegGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.routeOptionCard .transitLeg {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.routeOptionCard .legTimes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.routeOptionCard .legRoute {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 10px;
+  align-content: center;
+  padding-left: 10px;
+  border-left: 1px solid var(--blue);
+}
+
+.routeOptionCard .legRoute > b {
+  grid-column: 1 / -1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routeOptionCard .legRoute > span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routeOptionCard .transferRow {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.routeOptionCard .transferRow > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routeOptionCard:hover {
+  border-color: var(--ink);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.routeOptionCard:active {
+  transform: translateY(0);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.badgeRow {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.strategyBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  line-height: 1.3;
+}
+
+.fastest {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #bbdefb;
+}
+
+.fewest_transfers {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.timeRange {
+  font-size: 12px;
+  font-weight: 850;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.metricsRow {
+  display: flex !important;
+  align-items: center;
+  gap: 14px !important;
+  flex-wrap: wrap;
+}
+
+.metricItem {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: baseline;
+  gap: 7px !important;
+  text-align: left;
+}
+
+.metricItem + .metricItem {
+  padding-left: 14px;
+  border-left: 1px solid var(--line);
+}
+
+.metricLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.metricValue {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .routeOptionCard {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .routeOptionSummaryBlock {
+    padding-right: 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .routeOptionCard .transitLegs {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@container (max-width: 520px) {
+  .routeOptionCard {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .routeOptionSummaryBlock {
+    padding-right: 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .routeOptionCard .transitLegs {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+.termsNotice {
+  margin-top: 20px;
+  padding: 12px 14px;
+  background: #fbf9f5;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.termsLink {
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.termsLink:hover {
+  color: var(--ink);
+}

@@ -1,4 +1,25 @@
-# React + TypeScript + Vite
+# Journey Timeline frontend
+
+通常はブラウザ内のモックデータで動作します。
+
+```env
+VITE_DATA_SOURCE=mock
+```
+
+FastAPIへ接続する場合は `frontend/.env` を作成して次を設定します。
+
+```env
+VITE_DATA_SOURCE=api
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+バックエンド、PostgreSQL、マイグレーションを起動した後にフロントエンドを起動してください。
+
+```powershell
+pnpm dev
+```
+
+## Vite template notes
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

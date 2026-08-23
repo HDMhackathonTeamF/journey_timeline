@@ -1,0 +1,405 @@
+.timelineLine::before {
+  left: 29px;
+  width: 3px;
+  background: #aeb3b8;
+}
+
+.editingTimeline::before {
+  bottom: 27px;
+}
+
+.viewingTimeline .itemWrap {
+  margin-bottom: 14px;
+}
+
+.referenceCard {
+  display: block;
+  transform: none !important;
+  padding: 7px 10px 7px 0;
+  border-color: #b9bdc1;
+  background: #f1f1f1;
+}
+
+.referenceCard:hover {
+  background: #e9edf1;
+}
+
+.referenceCard::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: 28px;
+  width: 3px;
+  background: #aeb3b8;
+}
+
+.itemWrap:first-child .referenceCard::before {
+  top: 18px;
+}
+
+.itemWrap:first-child .referenceCard:has(.transitSummary)::before {
+  top: 33px;
+}
+
+.itemWrap:last-child .referenceCard::before {
+  bottom: 31px;
+}
+
+.itemWrap:last-child .referenceCard:has(.eventMarker)::before {
+  bottom: calc(100% - 31px);
+}
+
+.referenceCard:hover::before {
+  background: #9ea5aa;
+}
+
+.timelineRow {
+  display: grid;
+  grid-template-columns: 85px minmax(0, 1fr);
+  align-items: start;
+  gap: 3px;
+  text-align: left;
+}
+
+.timeAndMarker,
+.durationRow,
+.rideRow {
+  display: grid;
+  grid-template-columns: 58px 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 3px;
+  text-align: left;
+}
+
+.timeAndMarker time {
+  z-index: 2;
+  justify-self: center;
+  min-width: 48px;
+  padding: 4px 6px;
+  border-radius: 2px;
+  background: #073f70;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.timeAndMarker {
+  grid-template-columns: 58px 24px;
+  align-items: center;
+}
+
+.eventMarker,
+.transitMarker {
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+}
+
+.eventMarker {
+  color: var(--red);
+}
+
+.transitMarker {
+  color: #0789d1;
+}
+
+.timelineRow:has(.transitMarker) {
+  gap: 6px;
+}
+
+.timeAndMarker .transitMarker {
+  justify-self: end;
+}
+
+.eventMarker svg {
+  width: 18px;
+  height: 18px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.eventMarker circle {
+  fill: none;
+  stroke: currentColor;
+}
+
+.transitMarker svg {
+  width: 20px;
+  height: 18px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.transitMarker svg path {
+  vector-effect: non-scaling-stroke;
+}
+
+.detailHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-bottom: 30px;
+}
+
+.detailHeading h2 {
+  margin: 0;
+}
+
+.detailHeadingIcon {
+  display: grid;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  background: #fde6e2;
+  margin-top: 1px;
+}
+
+.detailHeadingIcon.transitMarker {
+  background: var(--blue-soft);
+}
+
+.detailHeadingIcon.eventMarker svg {
+  width: 22px;
+  height: 22px;
+}
+
+.detailHeadingIcon.transitMarker svg {
+  width: 24px;
+  height: 21px;
+}
+
+.toolIcon {
+  display: inline-grid !important;
+  width: 30px !important;
+  height: 30px;
+  margin-right: 7px;
+  border-radius: 4px;
+  background: #dedede;
+  color: #62676b !important;
+  vertical-align: middle;
+}
+
+.addTools {
+  gap: 0;
+}
+
+.addTools > button {
+  display: flex;
+  align-items: center;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.toolIcon.eventMarker svg {
+  width: 21px;
+  height: 21px;
+}
+
+.toolIcon.transitMarker svg {
+  width: 22px;
+  height: 19px;
+}
+
+.rowBody {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+  padding-top: 3px;
+}
+
+.rowBody strong {
+  font-size: 14px;
+}
+
+.timelineRow:has(.transitSummary) .rowBody {
+  padding-top: 0;
+}
+
+.timelineRow:has(.transitSummary):not(:has(.transferTimes)) .timeAndMarker {
+  padding-top: 15px;
+}
+
+.rowBody small,
+.rideRow small,
+.durationRow small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.durationRow,
+.rideRow {
+  min-height: 24px;
+}
+
+.rideRow {
+  padding: 3px 0;
+}
+
+.durationRow i,
+.rideRow i {
+  justify-self: center;
+  width: 0;
+  height: 0;
+}
+
+.durationRow small {
+  padding: 4px 0;
+}
+
+.rideRow > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px 0 5px;
+  padding-left: 10px;
+  border-left: 1.5px solid #7f868c;
+}
+
+.rideRow b {
+  color: #07538c;
+  font-size: 11px;
+}
+
+.travelDuration {
+  position: relative;
+  z-index: 2;
+  align-self: center;
+  justify-self: center;
+  transform: none;
+  min-width: 40px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: #c9cacc;
+  color: #073f70;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: center;
+}
+
+.travelDurationBeforeTransfer {
+  transform: none;
+}
+
+.travelDuration::before,
+.travelDuration::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 3px;
+  height: 8px;
+  background: #aeb3b8;
+  transform: translateX(-50%);
+}
+
+.travelDuration::before {
+  bottom: 100%;
+}
+
+.travelDuration::after {
+  top: 100%;
+}
+
+.transferTimes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.05;
+  box-shadow: 0 0 0 1px #f1f1f1;
+  overflow: hidden;
+}
+
+.timeAndMarker:has(.transferTimes) {
+  align-items: start;
+}
+
+.timeAndMarker:has(.transferTimes) .transitMarker {
+  margin-top: 18px;
+  transform: none;
+}
+
+.timelineRow:has(.transferTimes) .rowBody {
+  padding-top: 0;
+  transform: none;
+}
+
+.timelineRow:has(.transferTimes) {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.timeAndMarker time.transferTimes {
+  min-width: 44px;
+  padding: 3px 5px;
+  font-size: 11px;
+}
+
+.transferTimes > span {
+  display: block;
+  width: 100%;
+}
+
+.transferTimes > span:first-child {
+  padding-bottom: 3px;
+  border-bottom: 2px solid rgb(255 255 255 / 45%);
+}
+
+.transferTimes > span:last-child {
+  padding-top: 3px;
+}
+
+@media (max-width: 680px) {
+  .timelineRow {
+    grid-template-columns: 85px minmax(0, 1fr);
+    gap: 3px;
+  }
+
+  .timeAndMarker,
+  .durationRow,
+  .rideRow {
+    grid-template-columns: 58px 24px minmax(0, 1fr);
+    gap: 3px;
+  }
+
+  .timelineLine::before {
+    left: 29px;
+  }
+
+  .timeAndMarker {
+    grid-template-columns: 58px 24px;
+  }
+
+}
+
+@media print {
+  .referenceCard {
+    transform: none !important;
+    background: #ffffff !important;
+    border: 1px solid #c0c4c8 !important;
+  }
+
+  .timeAndMarker time {
+    background: #073f70 !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
