@@ -68,7 +68,7 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
     <main className={styles.page}>
       <header className={styles.header}>
         <button className={styles.brand} type="button" onClick={() => navigate('/')}>Journey Timeline</button>
-        <div className={styles.titleArea}><span className={isEditing ? styles.editBadge : styles.viewBadge}>{isEditing ? '編集中' : '閲覧モード'}</span><strong>{journey.title}</strong></div>
+        <div className={styles.titleArea}><span className={isEditing ? styles.editBadge : styles.viewBadge} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', width: 68 }}>{isEditing ? '編集モード' : '閲覧モード'}</span><strong>{journey.title}</strong></div>
         <div className={styles.headerActions}>
           {!isEditing && <button type="button" onClick={() => setAuthOpen(true)}>編集する</button>}
           <button type="button" onClick={share}>↗ 共有</button>
@@ -76,8 +76,9 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
         </div>
       </header>
 
-      <div className={`${styles.workspace} ${!isEditing ? styles.viewWorkspace : ''} ${!editor ? (isEditing ? panelStyles.noDetailWorkspace : panelStyles.viewNoDetailWorkspace) : ''}`}>
-        {isEditing && <aside className={styles.tools}><p className={styles.sectionLabel}>ADD TO PLAN</p><button type="button" onClick={() => setEditor({ type: 'event' })}><span>●</span> 予定を追加</button><button type="button" onClick={() => setEditor({ type: 'transit' })}><span>⇄</span> 移動を追加</button><div className={styles.toolBottom}><button type="button" onClick={() => { setEditor(null); setIsEditing(false) }}>編集を終了</button><button className={styles.dangerText} type="button" onClick={deleteJourney}>旅程を削除</button></div></aside>}
+      <div className={styles.workspace}>
+        {!isEditing && <aside className={styles.tools} aria-hidden="true" />}
+        {isEditing && <aside className={`${styles.tools} ${timelineStyles.addTools}`}><p className={styles.sectionLabel}>ADD TO PLAN</p><button type="button" onClick={() => setEditor({ type: 'event' })}><span className={`${timelineStyles.toolIcon} ${timelineStyles.eventMarker}`}><EventPinIcon /></span>予定を追加</button><button type="button" onClick={() => setEditor({ type: 'transit' })}><span className={`${timelineStyles.toolIcon} ${timelineStyles.transitMarker}`}><TrainIcon /></span>移動を追加</button><div className={styles.toolBottom}><button type="button" onClick={() => { setEditor(null); setIsEditing(false) }}>編集を終了</button><button className={styles.dangerText} type="button" onClick={deleteJourney}>旅程を削除</button></div></aside>}
 
         <section className={styles.timelinePane}>
           <div className={styles.printHeader}>
@@ -86,7 +87,7 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
           </div>
           <div className={styles.paneHeading}><div><p className={styles.sectionLabel}>ITINERARY</p><h1><button className={panelStyles.journeyTitleButton} type="button" onClick={() => setEditor({ type: 'journey' })}>{journey.title}</button></h1></div><span>{journey.items.length} stops</span></div>
           {groups.length === 0 ? <div className={styles.emptyTimeline}><span>○</span><h2>まだ予定がありません</h2><p>旅の最初の目的地を追加しましょう。</p>{isEditing && <button type="button" onClick={() => setEditor({ type: 'event' })}>予定を追加する</button>}</div> : groups.map((group) => (
-            <section className={styles.day} key={group.key}><h2>{group.label}</h2><div className={`${styles.timelineLine} ${timelineStyles.timelineLine}`}>{group.items.map((item) => (
+            <section className={styles.day} key={group.key}><h2>{group.label}</h2><div className={`${styles.timelineLine} ${timelineStyles.timelineLine} ${isEditing ? timelineStyles.editingTimeline : timelineStyles.viewingTimeline}`}>{group.items.map((item) => (
               <div className={`${styles.itemWrap} ${timelineStyles.itemWrap}`} key={item.id}>
                 <TimelineCard item={item} selected={selectedItem?.id === item.id} onClick={() => setEditor(isEditing ? { type: item.item_type, itemId: item.id } : { type: 'detail', itemId: item.id })} />
                 {isEditing && <div className={styles.itemControls}><button type="button" aria-label="上へ移動" disabled={item.order_index === 0 || busy} onClick={async () => { setBusy(true); await journeyRepository.moveItem(journey.id, item.id, -1); await refresh(); setBusy(false) }}>↑</button><button type="button" aria-label="下へ移動" disabled={item.order_index === journey.items.length - 1 || busy} onClick={async () => { setBusy(true); await journeyRepository.moveItem(journey.id, item.id, 1); await refresh(); setBusy(false) }}>↓</button><button type="button" aria-label="この後に追加" onClick={() => setEditor({ type: 'event', index: item.order_index + 1 })}>＋</button></div>}
@@ -234,7 +235,7 @@ function EventEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extrac
   return (
     <form className={styles.editor} onSubmit={submit}>
       <div className={styles.editorTop}>
-        <div><p className={styles.sectionLabel}>EVENT</p><h2>{item ? '予定を編集' : '予定を追加'}</h2></div>
+        <div><p className={styles.sectionLabel}>EVENT</p><div className={timelineStyles.detailHeading}><span className={`${timelineStyles.detailHeadingIcon} ${timelineStyles.eventMarker}`}><EventPinIcon /></span><h2>{item ? '予定を編集' : '予定を追加'}</h2></div></div>
         <button className={styles.close} type="button" onClick={onCancel}>×</button>
       </div>
       <label>予定名<input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="行きたい場所、やりたいこと" required /></label>
@@ -257,31 +258,20 @@ function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extr
   const [from, setFrom] = useState(item?.transit.departure_location ?? '')
   const [to, setTo] = useState(item?.transit.arrival_location ?? '')
   const [searchType, setSearchType] = useState<'departure' | 'arrival'>('departure')
-  const [departureTime, setDepartureTime] = useState(toInputDateTime(item?.start_time ?? null))
-  const [arrivalTime, setArrivalTime] = useState(toInputDateTime(item?.end_time ?? null))
+  const [time, setTime] = useState(toInputDateTime(item?.start_time ?? item?.end_time ?? null))
   const [routes, setRoutes] = useState<TransitRoute[]>(item ? [item.transit.transit_data] : [])
   const [searching, setSearching] = useState(false)
   const [error, setError] = useState('')
 
-  const activeTime = searchType === 'arrival' ? arrivalTime : departureTime
-  const setActiveTime = (val: string) => {
-    if (searchType === 'arrival') {
-      setArrivalTime(val)
-    } else {
-      setDepartureTime(val)
-    }
-  }
-
   const handleSearch = async (targetType?: 'departure' | 'arrival') => {
     const type = targetType ?? searchType
-    const timeToSend = type === 'arrival' ? arrivalTime : departureTime
     if (!from.trim() || !to.trim()) return
 
     setSearchType(type)
     setSearching(true)
     setError('')
     try {
-      const results = await journeyRepository.searchTransit(from.trim(), to.trim(), timeToSend, type)
+      const results = await journeyRepository.searchTransit(from.trim(), to.trim(), time, type)
       setRoutes(results)
       if (results.length === 0) {
         setError('該当する経路が見つかりませんでした。')
@@ -301,7 +291,7 @@ function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extr
   return (
     <div className={styles.editor}>
       <div className={styles.editorTop}>
-        <div><p className={styles.sectionLabel}>TRANSIT</p><h2>{item ? '移動を編集' : '移動を追加'}</h2></div>
+         <div><p className={styles.sectionLabel}>TRANSIT</p><div className={timelineStyles.detailHeading}><span className={`${timelineStyles.detailHeadingIcon} ${timelineStyles.transitMarker}`}><TrainIcon /></span><h2>{item ? '移動を編集' : '移動を追加'}</h2></div></div>
         <button className={styles.close} type="button" onClick={onCancel}>×</button>
       </div>
       <form onSubmit={submit}>
@@ -310,7 +300,7 @@ function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extr
 
         <div className={styles.dateTimeField}>
           <div className={styles.timeTypeRow}>
-            <span className={styles.fieldLabel}>{searchType === 'departure' ? '出発日時' : '到着日時'}</span>
+            <span className={styles.fieldLabel}>日時</span>
             <div className={styles.timeTypeTabs}>
               <button
                 type="button"
@@ -331,19 +321,18 @@ function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extr
           <div className={styles.timeInputWrap}>
             <input
               type="datetime-local"
-              value={activeTime}
-              onChange={(event) => setActiveTime(event.target.value)}
+              value={time}
+              onChange={(event) => setTime(event.target.value)}
             />
-            {activeTime && (
-              <button
-                type="button"
-                className={styles.clearTimeButton}
-                onClick={() => setActiveTime('')}
-                title="日時指定をクリア"
-              >
-                クリア
-              </button>
-            )}
+            <button
+              type="button"
+              className={styles.clearTimeButton}
+              onClick={() => setTime('')}
+              title="日時指定をクリア"
+              disabled={!time}
+            >
+              クリア
+            </button>
           </div>
         </div>
 

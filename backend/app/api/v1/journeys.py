@@ -159,4 +159,3 @@ async def delete_journey(
     await db.commit()
     return None
 
-
