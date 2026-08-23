@@ -21,7 +21,8 @@ const verifyJourney = async (journeyId: string, password: string) => {
 }
 
 export const apiJourneyRepository: JourneyRepository = {
-  listJourneys: () => request<JourneySummary[]>('/journeys'),
+  listJourneys: (query?: string) =>
+    request<JourneySummary[]>(query?.trim() ? `/journeys?q=${encodeURIComponent(query.trim())}` : '/journeys'),
   getJourney: (id) => request<Journey>(`/journeys/${id}`, { headers: authHeaders(id) }),
   createJourney: async (title, password) => {
     const created = await request<JourneyCreateResponse>('/journeys', { method: 'POST', body: JSON.stringify({ title, password: password || undefined }) })

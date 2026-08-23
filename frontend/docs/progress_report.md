@@ -161,6 +161,16 @@ frontend/src/
   - タイトル画面（`.heroPage`）を `100vh / 100dvh` に設定し、`overflow: hidden` かつ Flexbox による上下中央均等配置へ刷新。
   - ヘッダー・メインコピー・CTAボタン・フッターがどんな画面解像度でもスクロール不要で1画面に美しく収まるように余白・フォントサイズを流体調整（`clamp()` 活用）。
 
+### 8. バックエンド主導の旅程タイトル検索機能とフロントエンドロジック仕様書の作成
+- **バックエンド API の検索機能拡張 ([app/api/v1/journeys.py](file:///c:/Users/SN200/journey_timeline/backend/app/api/v1/journeys.py))**:
+  - `GET /api/v1/journeys` に検索クエリパラメータ `q`（`title_like`）を追加。
+  - SQLAlchemy の `Journey.title.ilike(f"%{q}%")` により、大文字小文字を区別せず部分一致で高速検索するロジックをバックエンド側に集約。
+- **フロントエンド リポジトリ層 & UI 連携**:
+  - `JourneyRepository.listJourneys(query?: string)` にクエリ引数を追加し、`apiJourneyRepository` および `mockJourneyRepository` でバックエンド / モック両環境に対応。
+  - `HomePage` での入力時に 200ms デバウンスを介してサーバーサイド検索を呼び出し、検索結果件数の表示やクリアボタンを実装。
+- **フロントエンドロジック仕様書の作成 ([backend/docs/frontend_domain_logic_spec.md](file:///c:/Users/SN200/journey_timeline/backend/docs/frontend_domain_logic_spec.md))**:
+  - フロントエンドに配置されている各種ロジック（予定時間の相互自動計算、タイムラインの並び替え・正規化、Transitの乗り換え待ち時間算出、認証セッション管理など）を体系化した仕様書を作成・追加。
+
 ## 動作確認結果
 
 - TypeScriptのコンパイル成功
@@ -176,11 +186,11 @@ frontend/src/
 - 経路検索結果で「最速」「乗換最少」の2種別ルートがクリーンなメトリクス付きで表示されることを確認
 - `/terms` 画面が正常に表示され、経路検索モーダルおよびホーム画面から正しく遷移できることを確認
 - タイトル画面がスクロールなしで1画面に収まることを確認
+- 旅程一覧画面でタイトル検索がバックエンド・リポジトリ経由で正常に動作することを確認
 
 ## 今後の課題・拡張候補
 
 - [ ] ドラッグ＆ドロップによるタイムライン並び替え
-- [ ] 旅程一覧の検索・タグ絞り込み
 - [ ] コンポーネントテストおよびE2Eテストの整備
 
 - [ ] Figmaデザインとの最終調整

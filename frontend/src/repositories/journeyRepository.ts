@@ -1,7 +1,7 @@
 import type { EventInput, Journey, JourneySummary, TimelineItem, TransitInput, TransitRoute } from '../types/journey'
 
 export interface JourneyRepository {
-  listJourneys(): Promise<JourneySummary[]>
+  listJourneys(query?: string): Promise<JourneySummary[]>
   getJourney(id: string): Promise<Journey>
   createJourney(title: string, password?: string): Promise<Journey>
   updateJourney(id: string, title: string): Promise<Journey>

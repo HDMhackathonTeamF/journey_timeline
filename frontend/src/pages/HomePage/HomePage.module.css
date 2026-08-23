@@ -424,6 +424,53 @@
   font-size: 14px;
 }
 
+.searchContainer {
+  max-width: 560px;
+  margin-bottom: 28px;
+}
+
+.searchBox {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.searchIcon {
+  display: inline-flex;
+  color: var(--muted);
+}
+
+.searchInput {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.searchClearButton {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 2px 4px;
+  font-size: 11px;
+}
+
+.searchClearButton:hover {
+  color: var(--ink);
+}
+
+.searchSummary {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -526,11 +573,13 @@
     height: 56px;
     padding: 0 18px;
   }
+
   .hero {
     width: calc(100% - 40px);
     padding: 42px 0 56px;
     gap: 32px;
   }
+
   .hero h1 {
     font-size: 38px;
   }
@@ -539,6 +588,7 @@
     flex-direction: column;
     gap: 10px;
   }
+
   .homeFooter {
     padding: 0 18px;
     min-height: 52px;
@@ -550,17 +600,21 @@
   .previewTop b {
     font-size: 20px;
   }
+
   .grid {
     grid-template-columns: 1fr;
   }
+
   .historyContent {
     padding: 36px 18px 60px;
   }
+
   .listHeading {
     align-items: flex-start;
     gap: 18px;
     flex-direction: column;
   }
+
   .listHeading h1 {
     font-size: 36px;
   }
