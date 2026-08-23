@@ -3,7 +3,7 @@ import type { EventInput, Journey, JourneySummary, TimelineItem, TransitInput, T
 export interface JourneyRepository {
   listJourneys(): Promise<JourneySummary[]>
   getJourney(id: string): Promise<Journey>
-  createJourney(title: string, password: string): Promise<Journey>
+  createJourney(title: string, password?: string): Promise<Journey>
   updateJourney(id: string, title: string): Promise<Journey>
   deleteJourney(id: string): Promise<void>
   createEvent(journeyId: string, input: EventInput, index?: number): Promise<TimelineItem>

@@ -53,6 +53,7 @@ export type Journey = {
   title: string
   created_at: string
   updated_at: string
+  is_protected?: boolean
   items: TimelineItem[]
 }
 

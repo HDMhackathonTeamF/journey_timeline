@@ -47,7 +47,7 @@ export const mockJourneyRepository: JourneyRepository = {
     void password
     const journeys = load()
     const now = new Date().toISOString()
-    const journey = { id: crypto.randomUUID(), title, created_at: now, updated_at: now, items: [] }
+    const journey: Journey = { id: crypto.randomUUID(), title, created_at: now, updated_at: now, is_protected: Boolean(password), items: [] }
     journeys.unshift(journey); save(journeys); return clone(journey)
   },
   async updateJourney(id, title) {

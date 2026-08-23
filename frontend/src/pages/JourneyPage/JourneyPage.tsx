@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { navigate } from '../../app/navigation'
 import { isMockDataSource, journeyRepository } from '../../repositories'
 import type { EventInput, Journey, TimelineItem, TransitRoute } from '../../types/journey'
-import { formatTime, fromInputDateTime, groupTimeline, toInputDateTime } from '../../utils/date'
+import { addMinutesToInputDateTime, formatTime, fromInputDateTime, getDiffMinutes, groupTimeline, subtractMinutesFromInputDateTime, toInputDateTime } from '../../utils/date'
 import styles from './JourneyPage.module.css'
 import panelStyles from './PanelLayout.module.css'
 import timelineStyles from './TimelineLayout.module.css'
@@ -57,25 +57,37 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
     catch { window.prompt('このURLをコピーしてください', url) }
   }
 
+  const exportPdf = () => {
+    const originalTitle = document.title
+    document.title = `${journey.title} - 旅程タイムライン`
+    window.print()
+    document.title = originalTitle
+  }
+
   return (
     <main className={styles.page}>
       <header className={styles.header}>
         <button className={styles.brand} type="button" onClick={() => navigate('/')}>Journey Timeline</button>
-        <div className={styles.titleArea}><span className={isEditing ? styles.editBadge : styles.viewBadge}>{isEditing ? '編集中' : '閲覧モード'}</span><strong>{journey.title}</strong></div>
+        <div className={styles.titleArea}><span className={isEditing ? styles.editBadge : styles.viewBadge} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', width: 68 }}>{isEditing ? '編集モード' : '閲覧モード'}</span><strong>{journey.title}</strong></div>
         <div className={styles.headerActions}>
           {!isEditing && <button type="button" onClick={() => setAuthOpen(true)}>編集する</button>}
           <button type="button" onClick={share}>↗ 共有</button>
-          <button type="button">＋ 書き出し</button>
+          <button type="button" onClick={exportPdf} title="PDFとして保存・印刷">＋ 書き出し</button>
         </div>
       </header>
 
-      <div className={`${styles.workspace} ${!isEditing ? styles.viewWorkspace : ''} ${!editor ? (isEditing ? panelStyles.noDetailWorkspace : panelStyles.viewNoDetailWorkspace) : ''}`}>
-        {isEditing && <aside className={styles.tools}><p className={styles.sectionLabel}>ADD TO PLAN</p><button type="button" onClick={() => setEditor({ type: 'event' })}><span>●</span> 予定を追加</button><button type="button" onClick={() => setEditor({ type: 'transit' })}><span>⇄</span> 移動を追加</button><div className={styles.toolBottom}><button type="button" onClick={() => { setEditor(null); setIsEditing(false) }}>編集を終了</button><button className={styles.dangerText} type="button" onClick={deleteJourney}>旅程を削除</button></div></aside>}
+      <div className={styles.workspace}>
+        {!isEditing && <aside className={styles.tools} aria-hidden="true" />}
+        {isEditing && <aside className={`${styles.tools} ${timelineStyles.addTools}`}><p className={styles.sectionLabel}>ADD TO PLAN</p><button type="button" onClick={() => setEditor({ type: 'event' })}><span className={`${timelineStyles.toolIcon} ${timelineStyles.eventMarker}`}><EventPinIcon /></span>予定を追加</button><button type="button" onClick={() => setEditor({ type: 'transit' })}><span className={`${timelineStyles.toolIcon} ${timelineStyles.transitMarker}`}><TrainIcon /></span>移動を追加</button><div className={styles.toolBottom}><button type="button" onClick={() => { setEditor(null); setIsEditing(false) }}>編集を終了</button><button className={styles.dangerText} type="button" onClick={deleteJourney}>旅程を削除</button></div></aside>}
 
         <section className={styles.timelinePane}>
+          <div className={styles.printHeader}>
+            <span className={styles.printBrand}>Journey Timeline</span>
+            <span className={styles.printDate}>{new Date().toLocaleDateString('ja-JP')} 出力</span>
+          </div>
           <div className={styles.paneHeading}><div><p className={styles.sectionLabel}>ITINERARY</p><h1><button className={panelStyles.journeyTitleButton} type="button" onClick={() => setEditor({ type: 'journey' })}>{journey.title}</button></h1></div><span>{journey.items.length} stops</span></div>
           {groups.length === 0 ? <div className={styles.emptyTimeline}><span>○</span><h2>まだ予定がありません</h2><p>旅の最初の目的地を追加しましょう。</p>{isEditing && <button type="button" onClick={() => setEditor({ type: 'event' })}>予定を追加する</button>}</div> : groups.map((group) => (
-            <section className={styles.day} key={group.key}><h2>{group.label}</h2><div className={`${styles.timelineLine} ${timelineStyles.timelineLine}`}>{group.items.map((item) => (
+            <section className={styles.day} key={group.key}><h2>{group.label}</h2><div className={`${styles.timelineLine} ${timelineStyles.timelineLine} ${isEditing ? timelineStyles.editingTimeline : timelineStyles.viewingTimeline}`}>{group.items.map((item) => (
               <div className={`${styles.itemWrap} ${timelineStyles.itemWrap}`} key={item.id}>
                 <TimelineCard item={item} selected={selectedItem?.id === item.id} onClick={() => setEditor(isEditing ? { type: item.item_type, itemId: item.id } : { type: 'detail', itemId: item.id })} />
                 {isEditing && <div className={styles.itemControls}><button type="button" aria-label="上へ移動" disabled={item.order_index === 0 || busy} onClick={async () => { setBusy(true); await journeyRepository.moveItem(journey.id, item.id, -1); await refresh(); setBusy(false) }}>↑</button><button type="button" aria-label="下へ移動" disabled={item.order_index === journey.items.length - 1 || busy} onClick={async () => { setBusy(true); await journeyRepository.moveItem(journey.id, item.id, 1); await refresh(); setBusy(false) }}>↓</button><button type="button" aria-label="この後に追加" onClick={() => setEditor({ type: 'event', index: item.order_index + 1 })}>＋</button></div>}
@@ -167,14 +179,189 @@ function EventEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extrac
   const [duration, setDuration] = useState(item?.event.duration_minutes?.toString() ?? '')
   const [address, setAddress] = useState(item?.event.address ?? '')
   const [memo, setMemo] = useState(item?.event.memo ?? '')
-  const submit = (event: FormEvent) => { event.preventDefault(); onSave({ title: title.trim(), start_time: fromInputDateTime(start), end_time: fromInputDateTime(end), duration_minutes: duration ? Number(duration) : null, address: address.trim() || null, memo: memo.trim() || null }) }
-  return <form className={styles.editor} onSubmit={submit}><div className={styles.editorTop}><div><p className={styles.sectionLabel}>EVENT</p><h2>{item ? '予定を編集' : '予定を追加'}</h2></div><button className={styles.close} type="button" onClick={onCancel}>×</button></div><label>予定名<input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="行きたい場所、やりたいこと" required /></label><div className={styles.fieldRow}><label>開始<input type="datetime-local" value={start} onChange={(event) => setStart(event.target.value)} /></label><label>終了<input type="datetime-local" value={end} onChange={(event) => setEnd(event.target.value)} /></label></div><label>滞在時間（分）<input type="number" min="0" value={duration} onChange={(event) => setDuration(event.target.value)} placeholder="60" /></label><label>住所<input value={address} onChange={(event) => setAddress(event.target.value)} placeholder="東京都…" /></label><label>メモ<textarea value={memo} onChange={(event) => setMemo(event.target.value)} rows={4} placeholder="予約情報や持ち物など" /></label><div className={styles.formActions}>{onDelete && <button className={styles.deleteButton} type="button" onClick={onDelete}>削除</button>}<button className={styles.saveButton} type="submit" disabled={busy || !title.trim()}>{busy ? '保存中…' : '保存する'}</button></div></form>
+
+  const handleStartChange = (newStart: string) => {
+    setStart(newStart)
+    if (newStart) {
+      const dur = Number(duration)
+      if (!Number.isNaN(dur) && dur > 0) {
+        setEnd(addMinutesToInputDateTime(newStart, dur))
+      } else if (end) {
+        const diff = getDiffMinutes(newStart, end)
+        if (diff !== null && diff >= 0) setDuration(diff.toString())
+      }
+    }
+  }
+
+  const handleEndChange = (newEnd: string) => {
+    setEnd(newEnd)
+    if (newEnd) {
+      if (start) {
+        const diff = getDiffMinutes(start, newEnd)
+        if (diff !== null && diff >= 0) setDuration(diff.toString())
+      } else {
+        const dur = Number(duration)
+        if (!Number.isNaN(dur) && dur > 0) {
+          setStart(subtractMinutesFromInputDateTime(newEnd, dur))
+        }
+      }
+    }
+  }
+
+  const handleDurationChange = (newDuration: string) => {
+    setDuration(newDuration)
+    const dur = Number(newDuration)
+    if (!Number.isNaN(dur) && dur > 0) {
+      if (start) {
+        setEnd(addMinutesToInputDateTime(start, dur))
+      } else if (end) {
+        setStart(subtractMinutesFromInputDateTime(end, dur))
+      }
+    }
+  }
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    onSave({
+      title: title.trim(),
+      start_time: fromInputDateTime(start),
+      end_time: fromInputDateTime(end),
+      duration_minutes: duration ? Number(duration) : null,
+      address: address.trim() || null,
+      memo: memo.trim() || null,
+    })
+  }
+
+  return (
+    <form className={styles.editor} onSubmit={submit}>
+      <div className={styles.editorTop}>
+        <div><p className={styles.sectionLabel}>EVENT</p><div className={timelineStyles.detailHeading}><span className={`${timelineStyles.detailHeadingIcon} ${timelineStyles.eventMarker}`}><EventPinIcon /></span><h2>{item ? '予定を編集' : '予定を追加'}</h2></div></div>
+        <button className={styles.close} type="button" onClick={onCancel}>×</button>
+      </div>
+      <label>予定名<input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="行きたい場所、やりたいこと" required /></label>
+      <div className={styles.fieldRow}>
+        <label>開始<input type="datetime-local" value={start} onChange={(event) => handleStartChange(event.target.value)} /></label>
+        <label>終了<input type="datetime-local" value={end} onChange={(event) => handleEndChange(event.target.value)} /></label>
+      </div>
+      <label>滞在時間（分）<input type="number" min="0" value={duration} onChange={(event) => handleDurationChange(event.target.value)} placeholder="60" /></label>
+      <label>住所<input value={address} onChange={(event) => setAddress(event.target.value)} placeholder="東京都…" /></label>
+      <label>メモ<textarea value={memo} onChange={(event) => setMemo(event.target.value)} rows={4} placeholder="予約情報や持ち物など" /></label>
+      <div className={styles.formActions}>
+        {onDelete && <button className={styles.deleteButton} type="button" onClick={onDelete}>削除</button>}
+        <button className={styles.saveButton} type="submit" disabled={busy || !title.trim()}>{busy ? '保存中…' : '保存する'}</button>
+      </div>
+    </form>
+  )
 }
 
 function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extract<TimelineItem, { item_type: 'transit' }>; onCancel: () => void; onSave: (route: TransitRoute, from: string, to: string) => void; onDelete?: () => void; busy: boolean }) {
-  const [from, setFrom] = useState(item?.transit.departure_location ?? ''); const [to, setTo] = useState(item?.transit.arrival_location ?? ''); const [time, setTime] = useState(toInputDateTime(item?.start_time ?? null)); const [routes, setRoutes] = useState<TransitRoute[]>(item ? [item.transit.transit_data] : []); const [searching, setSearching] = useState(false)
-  const search = async (event: FormEvent) => { event.preventDefault(); setSearching(true); setRoutes(await journeyRepository.searchTransit(from, to, time)); setSearching(false) }
-  return <div className={styles.editor}><div className={styles.editorTop}><div><p className={styles.sectionLabel}>TRANSIT</p><h2>{item ? '移動を編集' : '移動を追加'}</h2></div><button className={styles.close} type="button" onClick={onCancel}>×</button></div><form onSubmit={search}><label>出発地<input autoFocus value={from} onChange={(event) => setFrom(event.target.value)} placeholder="新浦安駅" required /></label><label>到着地<input value={to} onChange={(event) => setTo(event.target.value)} placeholder="秋葉原駅" required /></label><label>出発日時<input type="datetime-local" value={time} onChange={(event) => setTime(event.target.value)} /></label><div className={styles.formActions}>{onDelete && <button className={styles.deleteButton} type="button" onClick={onDelete}>削除</button>}<button className={styles.saveButton} type="submit" disabled={searching || !from.trim() || !to.trim()}>{searching ? '検索中…' : '経路を再検索'}</button></div></form>{routes.length > 0 && <div className={styles.routes}><p className={styles.sectionLabel}>{item ? 'SELECT ROUTE TO SAVE' : 'ROUTE OPTIONS'}</p>{routes.map((route) => <button className={transitStyles.routeOption} type="button" key={route.id} disabled={busy} onClick={() => onSave(route, from, to)}><span className={transitStyles.routeOptionSummary}><span><strong>{route.summary}</strong><small>{formatTime(route.departure_time)} → {formatTime(route.arrival_time)}</small></span><span><strong>{route.duration_minutes}分</strong><small>{route.total_fare > 0 ? `¥${route.total_fare}` : '料金情報なし'} · 乗換{route.transfers_count}回</small></span></span><TransitLegDetails route={route} /></button>)}</div>}</div>
+  const [from, setFrom] = useState(item?.transit.departure_location ?? '')
+  const [to, setTo] = useState(item?.transit.arrival_location ?? '')
+  const [searchType, setSearchType] = useState<'departure' | 'arrival'>('departure')
+  const [time, setTime] = useState(toInputDateTime(item?.start_time ?? item?.end_time ?? null))
+  const [routes, setRoutes] = useState<TransitRoute[]>(item ? [item.transit.transit_data] : [])
+  const [searching, setSearching] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSearch = async (targetType?: 'departure' | 'arrival') => {
+    const type = targetType ?? searchType
+    if (!from.trim() || !to.trim()) return
+
+    setSearchType(type)
+    setSearching(true)
+    setError('')
+    try {
+      const results = await journeyRepository.searchTransit(from.trim(), to.trim(), time, type)
+      setRoutes(results)
+      if (results.length === 0) {
+        setError('該当する経路が見つかりませんでした。')
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : '経路の検索に失敗しました。')
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault()
+    void handleSearch()
+  }
+
+  return (
+    <div className={styles.editor}>
+      <div className={styles.editorTop}>
+         <div><p className={styles.sectionLabel}>TRANSIT</p><div className={timelineStyles.detailHeading}><span className={`${timelineStyles.detailHeadingIcon} ${timelineStyles.transitMarker}`}><TrainIcon /></span><h2>{item ? '移動を編集' : '移動を追加'}</h2></div></div>
+        <button className={styles.close} type="button" onClick={onCancel}>×</button>
+      </div>
+      <form onSubmit={submit}>
+        <label>出発地<input autoFocus value={from} onChange={(event) => setFrom(event.target.value)} placeholder="新浦安駅" required /></label>
+        <label>到着地<input value={to} onChange={(event) => setTo(event.target.value)} placeholder="秋葉原駅" required /></label>
+
+        <div className={styles.dateTimeField}>
+          <div className={styles.timeTypeRow}>
+            <span className={styles.fieldLabel}>日時</span>
+            <div className={styles.timeTypeTabs}>
+              <button
+                type="button"
+                className={`${styles.timeTypeTab} ${searchType === 'departure' ? styles.timeTypeTabActive : ''}`}
+                onClick={() => setSearchType('departure')}
+              >
+                出発
+              </button>
+              <button
+                type="button"
+                className={`${styles.timeTypeTab} ${searchType === 'arrival' ? styles.timeTypeTabActive : ''}`}
+                onClick={() => setSearchType('arrival')}
+              >
+                到着
+              </button>
+            </div>
+          </div>
+          <div className={styles.timeInputWrap}>
+            <input
+              type="datetime-local"
+              value={time}
+              onChange={(event) => setTime(event.target.value)}
+            />
+            <button
+              type="button"
+              className={styles.clearTimeButton}
+              onClick={() => setTime('')}
+              title="日時指定をクリア"
+              disabled={!time}
+            >
+              クリア
+            </button>
+          </div>
+        </div>
+
+        {error && <p className={styles.formError} role="alert">{error}</p>}
+
+        <div className={styles.formActions}>
+          {onDelete && <button className={styles.deleteButton} type="button" onClick={onDelete}>削除</button>}
+          <button className={styles.saveButton} type="submit" disabled={searching || !from.trim() || !to.trim()}>
+            {searching ? '検索中…' : `${searchType === 'arrival' ? '到着日時' : '出発日時'}で経路を検索`}
+          </button>
+        </div>
+      </form>
+
+      {routes.length > 0 && (
+        <div className={styles.routes}>
+          <p className={styles.sectionLabel}>{item ? 'SELECT ROUTE TO SAVE' : 'ROUTE OPTIONS'}</p>
+          {routes.map((route) => (
+            <button className={transitStyles.routeOption} type="button" key={route.id} disabled={busy} onClick={() => onSave(route, from, to)}>
+              <span className={transitStyles.routeOptionSummary}>
+                <span><strong>{route.summary}</strong><small>{formatTime(route.departure_time)} → {formatTime(route.arrival_time)}</small></span>
+                <span><strong>{route.duration_minutes}分</strong><small>{route.total_fare > 0 ? `¥${route.total_fare}` : '料金情報なし'} · 乗換{route.transfers_count}回</small></span>
+              </span>
+              <TransitLegDetails route={route} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function TransitLegDetails({ route }: { route: TransitRoute }) {
