@@ -30,30 +30,42 @@ pnpm install
 #### フロントエンドだけをモックで起動
 ```powershell
 Copy-Item frontend\.env.example frontend\.env
-cd frontend
-pnpm dev
+mise run dev
 ```
+*(または `cd frontend` して `pnpm dev`)*
 
 #### バックエンドと接続して起動
 リポジトリ直下で実行します。
 ```powershell
 Copy-Item .env.example .env
 Copy-Item frontend\.env.example frontend\.env
-docker compose up -d
+mise run api:db
 ```
 
-`frontend/.env`の`VITE_DATA_SOURCE`を`api`に変更します。
+`frontend/.env` の `VITE_DATA_SOURCE` を `api` に変更します。
 
-バックエンドを起動します。
+バックエンドをマイグレーションして起動します：
 ```powershell
 cd backend
 uv sync
-uv run alembic upgrade head
-uv run fastapi dev app/main.py
+cd ..
+mise run api:migrate
+mise run api:dev
 ```
 
-別のターミナルでフロントエンドを起動します。
+別のターミナルでフロントエンドを起動します：
 ```powershell
-cd frontend
-pnpm dev
+mise run dev
 ```
+
+---
+
+### 便利な mise タスク一覧
+リポジトリ直下で以下のコマンドが使用できます：
+- `mise run dev`: フロントエンド開発サーバーの起動
+- `mise run build`: フロントエンドの型チェック＆本番ビルド
+- `mise run lint`: ESLint による静的チェック
+- `mise run check`: フロントエンド＆バックエンドの一括構文・ビルド検証
+- `mise run api:db`: PostgreSQL データベースの起動
+- `mise run api:migrate`: DB マイグレーションの実行
+- `mise run api:dev`: FastAPI サーバーの起動
