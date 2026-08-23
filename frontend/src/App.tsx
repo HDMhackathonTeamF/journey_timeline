@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { HomePage } from './pages/HomePage/HomePage'
 import { JourneyPage } from './pages/JourneyPage/JourneyPage'
+import { TermsPage } from './pages/TermsPage/TermsPage'
 import { navigate } from './app/navigation'
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
 
   const path = location.split('?')[0]
   if (path === '/') return <HomePage />
+  if (path === '/terms') return <TermsPage />
   if (path === '/journeys/new') return <JourneyPage journeyId={null} />
   const match = path.match(/^\/journeys\/([^/]+)$/)
   if (match) return <JourneyPage journeyId={decodeURIComponent(match[1])} />

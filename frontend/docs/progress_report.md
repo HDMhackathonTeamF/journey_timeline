@@ -148,6 +148,19 @@ frontend/src/
   - バックエンドプロキシ（`fetch_transit_plan`）にて `fastest` と `fewestTransfers` の並列取得結果をタグ付きでマージして返却。
   - フロントエンドモック環境でも2パターンの差別化された経路データを即時提供。
 
+### 6. 利用規約・交通データに関する注意事項画面（`/terms`）と導線実装
+- **専用規約画面の実装 ([TermsPage.tsx](file:///c:/Users/SN200/journey_timeline/frontend/src/pages/TermsPage/TermsPage.tsx))**:
+  - タイトル: **利用規約・交通データに関する注意事項**
+  - Transit API の規約に準拠し、非公式性の明示、運行情報の免責事項（ダイヤ乱れや運休等）、各交通事業者・ODPT・GTFS・OpenStreetMap 等へのデータ出典クレジット、Transit API 公式規約へのリンク、責任制限、指摘・連絡先を体系的に網羅。
+- **画面上の注意事項とリンク導線の設置**:
+  - 経路検索モーダル（`TransitEditor`）下部に「※ 経路情報は非公式データです。実際の運行状況は各社公式情報をご確認ください。[注意事項とデータ出典 →]」を配置。
+  - ホーム画面（`HomePage`）フッターに「利用規約・データ出典」リンクを常設。
+
+### 7. タイトル（ホーム）画面のスクロールなし1画面レイアウト調整
+- **ビューポートフィット設計 ([HomePage.module.css](file:///c:/Users/SN200/journey_timeline/frontend/src/pages/HomePage/HomePage.module.css), [HomePage.tsx](file:///c:/Users/SN200/journey_timeline/frontend/src/pages/HomePage/HomePage.tsx))**:
+  - タイトル画面（`.heroPage`）を `100vh / 100dvh` に設定し、`overflow: hidden` かつ Flexbox による上下中央均等配置へ刷新。
+  - ヘッダー・メインコピー・CTAボタン・フッターがどんな画面解像度でもスクロール不要で1画面に美しく収まるように余白・フォントサイズを流体調整（`clamp()` 活用）。
+
 ## 動作確認結果
 
 - TypeScriptのコンパイル成功
@@ -161,6 +174,8 @@ frontend/src/
 - モード切替時にモーダル／エディタが確実に閉じることを確認
 - アイテム切り替え時にエディタの入力ステートがリセットされることを確認
 - 経路検索結果で「最速」「乗換最少」の2種別ルートがクリーンなメトリクス付きで表示されることを確認
+- `/terms` 画面が正常に表示され、経路検索モーダルおよびホーム画面から正しく遷移できることを確認
+- タイトル画面がスクロールなしで1画面に収まることを確認
 
 ## 今後の課題・拡張候補
 
