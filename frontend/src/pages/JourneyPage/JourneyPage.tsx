@@ -72,11 +72,12 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
     <main className={styles.page}>
       <header className={styles.header}>
         <button className={styles.brand} type="button" onClick={() => navigate('/')}>Journey Timeline</button>
-        <div className={styles.titleArea}><span className={isEditing ? styles.editBadge : styles.viewBadge} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', width: 68 }}>{isEditing ? '編集モード' : '閲覧モード'}</span><strong>{journey.title}</strong></div>
+        <div className={styles.titleArea}><span className={isEditing ? styles.editBadge : styles.viewBadge} style={{ display: 'inline-flex', flex: '0 0 68px', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box', width: 68, whiteSpace: 'nowrap' }}>{isEditing ? '編集モード' : '閲覧モード'}</span><strong style={{ flex: 1, minWidth: 0 }}>{journey.title}</strong></div>
         <div className={styles.headerActions}>
-          {!isEditing && <button type="button" onClick={() => setAuthOpen(true)}>編集する</button>}
-          <button type="button" onClick={share}>↗ 共有</button>
-          <button type="button" onClick={exportPdf} title="PDFとして保存・印刷">＋ 書き出し</button>
+          <button type="button" onClick={() => { if (isEditing) { setEditor(null); setIsEditing(false) } else if (journey.is_protected) setAuthOpen(true); else setIsEditing(true) }}><span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>{isEditing ? <FinishEditIcon /> : <EditIcon />}{isEditing ? '終了' : '編集'}</span></button>
+          <button type="button" onClick={() => navigate('/?view=history')}><span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}><ListIcon />一覧</span></button>
+          <button type="button" onClick={share}><span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}><ShareIcon />共有</span></button>
+          <button type="button" onClick={exportPdf} title="PDFとして保存・印刷"><span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}><ExportIcon />書き出し</span></button>
         </div>
       </header>
 
@@ -89,7 +90,7 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
             <span className={styles.printBrand}>Journey Timeline</span>
             <span className={styles.printDate}>{new Date().toLocaleDateString('ja-JP')} 出力</span>
           </div>
-          <div className={styles.paneHeading}><div><p className={styles.sectionLabel}>ITINERARY</p><h1><button className={panelStyles.journeyTitleButton} type="button" onClick={() => setEditor({ type: 'journey' })}>{journey.title}</button></h1></div><span>{journey.items.length} stops</span></div>
+          <div className={styles.paneHeading}><div><p className={styles.sectionLabel}>ITINERARY</p><h1><button className={panelStyles.journeyTitleButton} type="button" onClick={() => setEditor({ type: 'journey' })}>{journey.title}</button></h1></div><span>{journey.items.length}件</span></div>
           {groups.length === 0 ? <div className={styles.emptyTimeline}><span>○</span><h2>まだ予定がありません</h2><p>旅の最初の目的地を追加しましょう。</p>{isEditing && <button type="button" onClick={() => setEditor({ type: 'event' })}>予定を追加する</button>}</div> : groups.map((group) => (
             <section className={styles.day} key={group.key}><h2>{group.label}</h2><div className={`${styles.timelineLine} ${timelineStyles.timelineLine} ${isEditing ? timelineStyles.editingTimeline : timelineStyles.viewingTimeline}`}>{group.items.map((item) => (
               <div className={`${styles.itemWrap} ${timelineStyles.itemWrap}`} key={item.id}>
@@ -120,13 +121,13 @@ function CreateJourney({ onCreated }: { onCreated: (journey: Journey) => void })
   const [error, setError] = useState('')
   const submit = async (event: FormEvent) => {
     event.preventDefault()
-    if (!title.trim() || !password) return
+    if (!title.trim()) return
     setBusy(true); setError('')
     try { onCreated(await journeyRepository.createJourney(title.trim(), password)) }
     catch (caught) { setError(caught instanceof Error ? caught.message : '旅程を作成できませんでした。') }
     finally { setBusy(false) }
   }
-  return <main className={styles.createPage}><header className={styles.header}><button className={styles.brand} type="button" onClick={() => navigate('/')}>Journey Timeline</button></header><section className={styles.createCard}><p className={styles.sectionLabel}>NEW JOURNEY</p><h1>新しい旅を<br />はじめよう。</h1><p>タイトルを決めたら、予定と移動をタイムラインに並べていきます。</p><form onSubmit={submit}><label>旅程のタイトル<input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="例：東京1日観光プラン" required /></label><label>編集用パスワード<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isMockDataSource ? 'モックでは保存されません' : '編集時に必要です'} required /></label>{error && <p className={styles.formError} role="alert">{error}</p>}<button type="submit" disabled={busy || !title.trim() || !password}>{busy ? '作成しています…' : '旅程を作成する →'}</button></form><button className={styles.backLink} type="button" onClick={() => navigate('/')}>← ホームへ戻る</button></section></main>
+  return <main className={styles.createPage}><header className={styles.header}><button className={styles.brand} type="button" onClick={() => navigate('/')}>Journey Timeline</button></header><section className={styles.createCard}><p className={styles.sectionLabel}>NEW JOURNEY</p><h1>新しい旅を<br />はじめよう。</h1><p>タイトルを決めたら、予定と移動をタイムラインに並べていきます。</p><form onSubmit={submit}><label>旅程のタイトル<input autoFocus value={title} onChange={(event) => setTitle(event.target.value)} placeholder="例：東京1日観光プラン" required /></label><label>編集用パスワード（任意）<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="設定する場合のみ入力" /><small className={styles.formHint}>{password ? '編集時にパスワードが必要です。' : '未入力なら誰でも編集できます。'}</small></label>{error && <p className={styles.formError} role="alert">{error}</p>}<button type="submit" disabled={busy || !title.trim()}>{busy ? '作成しています…' : '旅程を作成する →'}</button></form><button className={styles.backLink} type="button" onClick={() => navigate('/')}>← ホームへ戻る</button></section></main>
 }
 
 function TimelineCard({ item, selected, onClick }: { item: TimelineItem; selected: boolean; onClick: () => void }) {
@@ -169,6 +170,26 @@ function EventPinIcon() {
 
 function TrainIcon() {
   return <svg aria-hidden="true" viewBox="0 0 28 24"><path d="M3.5 3.5h10.8c5.7 0 10.3 3.4 11.7 8.7.4 1.5-.7 3-2.3 3H3.5V3.5Z" /><path d="M9.5 4v7.5M15.5 4v7.5M3.5 11.5h22M3 20.5h22.5" /></svg>
+}
+
+function ShareIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 10 13 3M8.5 3H13v4.5" /><path d="M11.5 9v3.5h-8v-8H7" /></svg>
+}
+
+function ListIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M5.5 4h7M5.5 8h7M5.5 12h7" /><path d="M3 4h.01M3 8h.01M3 12h.01" strokeWidth="2" /></svg>
+}
+
+function EditIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 2.5 3 3-7.8 7.8-3.7.7.7-3.7 7.8-7.8Z" /><path d="m9 4 3 3" /></svg>
+}
+
+function FinishEditIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3.2L13 4.8" /></svg>
+}
+
+function ExportIcon() {
+  return <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 2v8M5 7l3 3 3-3" /><path d="M3 11.5v2h10v-2" /></svg>
 }
 
 function JourneyEditor({ journey, editable, onClose, onSaved }: { journey: Journey; editable: boolean; onClose: () => void; onSaved: (journey: Journey) => void }) {

@@ -38,7 +38,7 @@ export const mockJourneyRepository: JourneyRepository = {
     await wait()
     return load().sort((a, b) => b.updated_at.localeCompare(a.updated_at)).map((journey) => {
       const dates = journey.items.map((item) => item.start_time).filter((value): value is string => Boolean(value)).sort()
-      return { id: journey.id, title: journey.title, start_date: dates.at(0) ?? null, end_date: dates.at(-1) ?? null, updated_at: journey.updated_at, item_count: journey.items.length }
+      return { id: journey.id, title: journey.title, is_protected: journey.is_protected, start_date: dates.at(0) ?? null, end_date: dates.at(-1) ?? null, updated_at: journey.updated_at, item_count: journey.items.length }
     })
   },
   async getJourney(id) { await wait(); return clone(findJourney(load(), id)) },
@@ -47,7 +47,7 @@ export const mockJourneyRepository: JourneyRepository = {
     void password
     const journeys = load()
     const now = new Date().toISOString()
-    const journey = { id: crypto.randomUUID(), title, created_at: now, updated_at: now, items: [] }
+    const journey: Journey = { id: crypto.randomUUID(), title, created_at: now, updated_at: now, is_protected: Boolean(password), items: [] }
     journeys.unshift(journey); save(journeys); return clone(journey)
   },
   async updateJourney(id, title) {

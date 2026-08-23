@@ -24,6 +24,11 @@ class JourneyResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class JourneySummaryResponse(JourneyResponse):
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    item_count: int = 0
+
 class JourneyVerifyRequest(BaseModel):
     password: str
 

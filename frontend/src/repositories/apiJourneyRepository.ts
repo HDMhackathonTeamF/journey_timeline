@@ -24,7 +24,7 @@ export const apiJourneyRepository: JourneyRepository = {
   listJourneys: () => request<JourneySummary[]>('/journeys'),
   getJourney: (id) => request<Journey>(`/journeys/${id}`, { headers: authHeaders(id) }),
   createJourney: async (title, password) => {
-    const created = await request<JourneyCreateResponse>('/journeys', { method: 'POST', body: JSON.stringify({ title, password }) })
+    const created = await request<JourneyCreateResponse>('/journeys', { method: 'POST', body: JSON.stringify({ title, password: password || undefined }) })
     if (password) await verifyJourney(created.id, password)
     return { ...created, items: created.items ?? [] }
   },

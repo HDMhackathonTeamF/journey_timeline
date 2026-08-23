@@ -54,12 +54,14 @@ export type Journey = {
   title: string
   created_at: string
   updated_at: string
+  is_protected?: boolean
   items: TimelineItem[]
 }
 
 export type JourneySummary = {
   id: string
   title: string
+  is_protected?: boolean
   start_date: string | null
   end_date: string | null
   updated_at: string
