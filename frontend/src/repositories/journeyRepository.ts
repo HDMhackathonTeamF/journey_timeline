@@ -12,7 +12,7 @@ export interface JourneyRepository {
   updateTransit(journeyId: string, itemId: string, input: TransitInput): Promise<TimelineItem>
   deleteItem(journeyId: string, itemId: string): Promise<void>
   moveItem(journeyId: string, itemId: string, direction: -1 | 1): Promise<void>
-  searchTransit(from: string, to: string, time: string): Promise<TransitRoute[]>
+  searchTransit(from: string, to: string, time: string, timeType?: 'departure' | 'arrival'): Promise<TransitRoute[]>
   startEditSession(journeyId: string, password: string): Promise<void>
   reset(): Promise<void>
 }
