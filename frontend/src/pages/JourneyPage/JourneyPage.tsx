@@ -395,6 +395,13 @@ function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extr
           })}
         </div>
       )}
+
+      <div className={transitStyles.termsNotice}>
+        <span>※ 経路情報は非公式データです。実際の運行状況は各交通事業者の公式情報をご確認ください。</span>
+        <button type="button" onClick={() => navigate('/terms')} className={transitStyles.termsLink}>
+          注意事項とデータ出典 →
+        </button>
+      </div>
     </div>
   )
 }
