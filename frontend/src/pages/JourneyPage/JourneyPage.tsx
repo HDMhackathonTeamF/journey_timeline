@@ -30,6 +30,10 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
     return () => { active = false }
   }, [journeyId])
 
+  useEffect(() => {
+    setEditor(null)
+  }, [isEditing])
+
   const refresh = async () => {
     if (journey) setJourney(await journeyRepository.getJourney(journey.id))
   }
@@ -97,10 +101,10 @@ export function JourneyPage({ journeyId }: { journeyId: string | null }) {
         </section>
 
         {editor && <aside className={styles.detailPane}>
-          {editor.type === 'journey' && <JourneyEditor journey={journey} editable={isEditing} onClose={() => setEditor(null)} onSaved={(updated) => { setJourney(updated); showNotice('旅程名を保存しました') }} />}
-          {editor?.type === 'event' && <EventEditor item={selectedItem?.item_type === 'event' ? selectedItem : undefined} onCancel={() => setEditor(null)} onSave={async (input) => { setBusy(true); if (editor.itemId) await journeyRepository.updateEvent(journey.id, editor.itemId, input); else await journeyRepository.createEvent(journey.id, input, editor.index ?? journey.items.length); await refresh(); setEditor(null); setBusy(false); showNotice('予定を保存しました') }} onDelete={editor.itemId ? async () => { if (!window.confirm('この予定を削除しますか？')) return; await journeyRepository.deleteItem(journey.id, editor.itemId!); await refresh(); setEditor(null) } : undefined} busy={busy} />}
-          {editor?.type === 'transit' && <TransitEditor item={selectedItem?.item_type === 'transit' ? selectedItem : undefined} onCancel={() => setEditor(null)} onSave={async (route, from, to) => { setBusy(true); if (editor.itemId) await journeyRepository.updateTransit(journey.id, editor.itemId, { route, departure_location: from, arrival_location: to }); else await journeyRepository.createTransit(journey.id, { route, departure_location: from, arrival_location: to }, editor.index ?? journey.items.length); await refresh(); setEditor(null); setBusy(false); showNotice(editor.itemId ? '移動を更新しました' : '移動を追加しました') }} onDelete={editor.itemId ? async () => { if (!window.confirm('この移動を削除しますか？')) return; await journeyRepository.deleteItem(journey.id, editor.itemId!); await refresh(); setEditor(null) } : undefined} busy={busy} />}
-          {editor?.type === 'detail' && selectedItem && <ItemDetail item={selectedItem} onClose={() => setEditor(null)} />}
+          {editor.type === 'journey' && <JourneyEditor key={`journey-${journey.id}`} journey={journey} editable={isEditing} onClose={() => setEditor(null)} onSaved={(updated) => { setJourney(updated); showNotice('旅程名を保存しました') }} />}
+          {editor?.type === 'event' && <EventEditor key={editor.itemId ? `event-${editor.itemId}` : `new-event-${editor.index ?? 'end'}`} item={selectedItem?.item_type === 'event' ? selectedItem : undefined} onCancel={() => setEditor(null)} onSave={async (input) => { setBusy(true); if (editor.itemId) await journeyRepository.updateEvent(journey.id, editor.itemId, input); else await journeyRepository.createEvent(journey.id, input, editor.index ?? journey.items.length); await refresh(); setEditor(null); setBusy(false); showNotice('予定を保存しました') }} onDelete={editor.itemId ? async () => { if (!window.confirm('この予定を削除しますか？')) return; await journeyRepository.deleteItem(journey.id, editor.itemId!); await refresh(); setEditor(null) } : undefined} busy={busy} />}
+          {editor?.type === 'transit' && <TransitEditor key={editor.itemId ? `transit-${editor.itemId}` : `new-transit-${editor.index ?? 'end'}`} item={selectedItem?.item_type === 'transit' ? selectedItem : undefined} onCancel={() => setEditor(null)} onSave={async (route, from, to) => { setBusy(true); if (editor.itemId) await journeyRepository.updateTransit(journey.id, editor.itemId, { route, departure_location: from, arrival_location: to }); else await journeyRepository.createTransit(journey.id, { route, departure_location: from, arrival_location: to }, editor.index ?? journey.items.length); await refresh(); setEditor(null); setBusy(false); showNotice(editor.itemId ? '移動を更新しました' : '移動を追加しました') }} onDelete={editor.itemId ? async () => { if (!window.confirm('この移動を削除しますか？')) return; await journeyRepository.deleteItem(journey.id, editor.itemId!); await refresh(); setEditor(null) } : undefined} busy={busy} />}
+          {editor?.type === 'detail' && selectedItem && <ItemDetail key={`detail-${selectedItem.id}`} item={selectedItem} onClose={() => setEditor(null)} />}
         </aside>}
       </div>
       {authOpen && <AuthDialog onClose={() => setAuthOpen(false)} onSuccess={() => { setAuthOpen(false); setIsEditing(true); void refresh(); showNotice('編集モードに切り替えました') }} />}
