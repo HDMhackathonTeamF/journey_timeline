@@ -47,6 +47,10 @@
   bottom: 31px;
 }
 
+.itemWrap:last-child .referenceCard:has(.eventMarker)::before {
+  bottom: calc(100% - 31px);
+}
+
 .referenceCard:hover::before {
   background: #9ea5aa;
 }
