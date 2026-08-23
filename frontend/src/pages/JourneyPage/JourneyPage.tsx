@@ -384,29 +384,31 @@ function TransitEditor({ item, onCancel, onSave, onDelete, busy }: { item?: Extr
                 disabled={busy}
                 onClick={() => onSave(route, from, to)}
               >
-                <div className={transitStyles.cardHeader}>
-                  <div className={transitStyles.badgeRow}>
-                    {badges.map((b, index) => (
-                      <span key={index} className={`${transitStyles.strategyBadge} ${b.className}`}>
-                        {b.label}
-                      </span>
-                    ))}
+                <div className={transitStyles.routeOptionSummaryBlock}>
+                  <div className={transitStyles.cardHeader}>
+                    <div className={transitStyles.badgeRow}>
+                      {badges.map((b, index) => (
+                        <span key={index} className={`${transitStyles.strategyBadge} ${b.className}`}>
+                          {b.label}
+                        </span>
+                      ))}
+                    </div>
+                    <span className={transitStyles.timeRange}>
+                      {formatTime(route.departure_time)} → {formatTime(route.arrival_time)}
+                    </span>
                   </div>
-                  <span className={transitStyles.timeRange}>
-                    {formatTime(route.departure_time)} → {formatTime(route.arrival_time)}
-                  </span>
-                </div>
 
-                <div className={transitStyles.metricsRow}>
-                  <div className={transitStyles.metricItem}>
-                    <span className={transitStyles.metricLabel}>所要時間</span>
-                    <strong className={transitStyles.metricValue}>{route.duration_minutes}分</strong>
-                  </div>
-                  <div className={transitStyles.metricItem}>
-                    <span className={transitStyles.metricLabel}>乗換</span>
-                    <strong className={transitStyles.metricValue}>
-                      {route.transfers_count === 0 ? 'なし (直通)' : `${route.transfers_count}回`}
-                    </strong>
+                  <div className={transitStyles.metricsRow}>
+                    <div className={transitStyles.metricItem}>
+                      <span className={transitStyles.metricLabel}>所要時間</span>
+                      <strong className={transitStyles.metricValue}>{route.duration_minutes}分</strong>
+                    </div>
+                    <div className={transitStyles.metricItem}>
+                      <span className={transitStyles.metricLabel}>乗換</span>
+                      <strong className={transitStyles.metricValue}>
+                        {route.transfers_count === 0 ? 'なし (直通)' : `${route.transfers_count}回`}
+                      </strong>
+                    </div>
                   </div>
                 </div>
 
