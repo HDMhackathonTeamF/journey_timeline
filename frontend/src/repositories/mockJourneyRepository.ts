@@ -80,11 +80,18 @@ export const mockJourneyRepository: JourneyRepository = {
     if (index >= 0 && target >= 0 && target < journey.items.length) [journey.items[index], journey.items[target]] = [journey.items[target], journey.items[index]]
     normalize(journey); save(journeys)
   },
-  async searchTransit(from, to, time) {
+  async searchTransit(from, to, time, timeType = 'departure') {
     await wait(); const base = time ? new Date(time) : new Date(); if (Number.isNaN(base.getTime())) base.setTime(Date.now())
     return clone(transitRoutes.map((route, routeIndex) => {
-      const departure = new Date(base.getTime() + routeIndex * 7 * 60_000)
-      const arrival = new Date(departure.getTime() + route.duration_minutes * 60_000)
+      let departure: Date
+      let arrival: Date
+      if (timeType === 'arrival') {
+        arrival = new Date(base.getTime() - routeIndex * 5 * 60_000)
+        departure = new Date(arrival.getTime() - route.duration_minutes * 60_000)
+      } else {
+        departure = new Date(base.getTime() + routeIndex * 7 * 60_000)
+        arrival = new Date(departure.getTime() + route.duration_minutes * 60_000)
+      }
       const offset = departure.getTime() - new Date(route.departure_time).getTime()
       const lastLegIndex = route.legs.length - 1
       const legs = route.legs.map((leg, legIndex) => ({

@@ -156,11 +156,45 @@ backend/
 }
 ```
 
+**④ 旅程の更新**
+* Endpoint: `PATCH /api/v1/journeys/{journey_id}` (または `PUT /api/v1/journeys/{journey_id}`)
+* Headers: `Authorization: Bearer <token>` (パスワード保護されている場合必須)
+* Request Body:
+```json
+{
+  "title": "更新後の旅程タイトル",
+  "password": "new_password" // 任意（パスワード変更時）
+}
+```
+* Response (200 OK): 更新後の旅程オブジェクトを返却。
+
+**⑤ 旅程の削除**
+* Endpoint: `DELETE /api/v1/journeys/{journey_id}`
+* Headers: `Authorization: Bearer <token>` (パスワード保護されている場合必須)
+* Response (204 No Content)
+
+**⑥ 旅程のパスワード検証・トークン発行**
+* Endpoint: `POST /api/v1/journeys/{journey_id}/verify`
+* Request Body:
+```json
+{
+  "password": "secret_password"
+}
+```
+* Response (200 OK):
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsIn...",
+  "token_type": "bearer"
+}
+```
+
 ### 4.2. タイムラインアイテム (Timeline Items)
 
 **① アイテムの追加**
 * Endpoint: `POST /api/v1/journeys/{journey_id}/items`
-* 処理: `item_type` に応じて `events` か `transits` にも登録します。
+* Headers: `Authorization: Bearer <token>` (パスワード保護旅程の場合必須)
+* 処理: `item_type` に応じて `events` か `transits` にも登録します。指定した `order_index` に挿入され、後続アイテムの `order_index` は自動的にインクリメント（+1）されます。
 * Request Body (Event追加の場合):
 ```json
 {
@@ -180,12 +214,38 @@ backend/
 
 **② アイテムの更新**
 * Endpoint: `PUT /api/v1/items/{item_id}`
+* Headers: `Authorization: Bearer <token>` (パスワード保護旅程の場合必須)
 * Request Body: 更新対象のフィールドを送信（`start_time`, `order_index`, および `event` または `transit` の中身）。
 * Response (200 OK): 更新後のアイテムオブジェクトを返却。
 
 **③ アイテムの削除**
 * Endpoint: `DELETE /api/v1/items/{item_id}`
+* Headers: `Authorization: Bearer <token>` (パスワード保護旅程の場合必須)
 * Response (204 No Content)
+
+**④ タイムラインアイテムの順序一括更新（並べ替え）**
+* Endpoint: `PATCH /api/v1/journeys/{journey_id}/items/reorder` (および `PUT /api/v1/journeys/{journey_id}/items/reorder`, `/journeys/{journey_id}/reorder`)
+* Headers: `Authorization: Bearer <token>` (パスワード保護旅程の場合必須)
+* Request Body: 並べ替え後のID配列、またはインデックス指定配列
+```json
+{
+  "item_ids": [
+    "22222222-2222-2222-2222-222222222222",
+    "11111111-1111-1111-1111-111111111111"
+  ]
+}
+```
+または
+```json
+{
+  "items": [
+    { "id": "22222222-2222-2222-2222-222222222222", "order_index": 0 },
+    { "id": "11111111-1111-1111-1111-111111111111", "order_index": 1 }
+  ]
+}
+```
+* Response (200 OK): 更新後の `order_index` 順に並んだアイテム一覧（`list[TimelineItemResponse]`）を返却。
+
 
 ### 4.3. Transit API プロキシ・データ成型
 
