@@ -34,12 +34,16 @@ function normalize(journey: Journey) {
 }
 
 export const mockJourneyRepository: JourneyRepository = {
-  async listJourneys() {
+  async listJourneys(query?: string) {
     await wait()
-    return load().sort((a, b) => b.updated_at.localeCompare(a.updated_at)).map((journey) => {
-      const dates = journey.items.map((item) => item.start_time).filter((value): value is string => Boolean(value)).sort()
-      return { id: journey.id, title: journey.title, is_protected: journey.is_protected, start_date: dates.at(0) ?? null, end_date: dates.at(-1) ?? null, updated_at: journey.updated_at, item_count: journey.items.length }
-    })
+    const q = query?.trim().toLowerCase()
+    return load()
+      .filter((journey) => !q || journey.title.toLowerCase().includes(q))
+      .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+      .map((journey) => {
+        const dates = journey.items.map((item) => item.start_time).filter((value): value is string => Boolean(value)).sort()
+        return { id: journey.id, title: journey.title, is_protected: journey.is_protected, start_date: dates.at(0) ?? null, end_date: dates.at(-1) ?? null, updated_at: journey.updated_at, item_count: journey.items.length }
+      })
   },
   async getJourney(id) { await wait(); return clone(findJourney(load(), id)) },
   async createJourney(title, password) {
