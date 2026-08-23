@@ -10,23 +10,34 @@ JST = timezone(timedelta(hours=9))
 async def resolve_location_to_id(client: httpx.AsyncClient, base_url: str, location: str) -> str:
     """Resolve a text location to an ID or geo coordinate using the suggest API."""
     if ":" in location:
-        return location # Already an ID or geo:lat,lng
+        return location  # Already an ID or geo:lat,lng
 
     url = f"{base_url}/locations/suggest"
     query = location.removesuffix("駅").strip() or location
     try:
-        res = await client.get(url, params={"q": query, "limit": 20}, timeout=5.0)
-        res.raise_for_status()
-        data = res.json()
-        stations = data.get("stations", [])
-        rail_stations = [station for station in stations if station.get("kind") == "station"]
-        candidates = rail_stations or stations
-        if candidates:
-            return candidates[0].get("id", location)
+        res = await client.get(url, params={"q": query, "limit": 20}, timeout=6.0)
+        if res.status_code == 200:
+            data = res.json()
+            stations = data.get("stations", [])
+            rail_stations = [station for station in stations if station.get("kind") == "station"]
+            candidates = rail_stations or stations
+            if candidates:
+                cand = candidates[0]
+                if cand.get("lat") and cand.get("lon"):
+                    return f"geo:{cand['lat']},{cand['lon']}"
+                return cand.get("id", location)
+
+        # Fallback to places suggest
+        url_places = f"{base_url}/places/suggest"
+        res_places = await client.get(url_places, params={"q": location, "limit": 10}, timeout=6.0)
+        if res_places.status_code == 200:
+            places = res_places.json().get("places", [])
+            if places and places[0].get("lat") and places[0].get("lon"):
+                return f"geo:{places[0]['lat']},{places[0]['lon']}"
 
         return location
     except Exception:
-        return location # Fallback to original text
+        return location  # Fallback to original text
 
 def _format_secs(secs: int, service_date: str) -> str:
     if not secs and secs != 0:
@@ -38,13 +49,15 @@ async def fetch_single_plan(client: httpx.AsyncClient, url: str, params: dict, s
     """Fetch a single plan with a specific strategy."""
     req_params = {**params, "strategy": strategy}
     try:
-        res = await client.get(url, params=req_params, timeout=10.0)
+        res = await client.get(url, params=req_params, timeout=20.0)
         if res.status_code != 200:
             return []
         data = res.json()
         
         extracted_routes = []
         options = data.get("options", [])
+        if not options and "journeys" in data:
+            options = [{"journey": j} for j in data["journeys"]]
              
         for opt in options:
             journey = opt.get("journey", {})
