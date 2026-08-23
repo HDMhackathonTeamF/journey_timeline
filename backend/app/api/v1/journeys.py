@@ -15,14 +15,16 @@ router = APIRouter(prefix="/api/v1/journeys", tags=["Journeys"])
 
 @router.get("", response_model=list[JourneySummaryResponse])
 async def list_journeys(
-    title_like: Optional[str] = Query(None, description="Search by title"),
-    limit: int = Query(10, ge=1, le=100),
+    q: Optional[str] = Query(None, description="Search query for title"),
+    title_like: Optional[str] = Query(None, description="Search by title (legacy parameter)"),
+    limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db)
 ):
     stmt = select(Journey).options(selectinload(Journey.timeline_items)).order_by(Journey.created_at.desc())
-    if title_like:
-        stmt = stmt.where(Journey.title.ilike(f"%{title_like}%"))
+    search_term = q or title_like
+    if search_term:
+        stmt = stmt.where(Journey.title.ilike(f"%{search_term}%"))
     stmt = stmt.limit(limit).offset(offset)
     result = await db.execute(stmt)
     journeys = result.scalars().all()

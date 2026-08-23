@@ -350,38 +350,47 @@
     height: 56px;
     padding: 0 18px;
   }
+
   .hero {
     padding: 0 20px;
   }
+
   .hero h1 {
     font-size: 38px;
   }
+
   .sun {
     opacity: 0.3;
     width: 320px;
     right: -140px;
     bottom: -80px;
   }
+
   .actions {
     align-items: stretch;
     flex-direction: column;
     gap: 10px;
   }
+
   .homeFooter {
     padding: 0 18px;
     height: 44px;
   }
+
   .grid {
     grid-template-columns: 1fr;
   }
+
   .historyContent {
     padding: 36px 18px 60px;
   }
+
   .listHeading {
     align-items: flex-start;
     gap: 18px;
     flex-direction: column;
   }
+
   .listHeading h1 {
     font-size: 36px;
   }
