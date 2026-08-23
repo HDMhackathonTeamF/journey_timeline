@@ -60,6 +60,7 @@ export type Journey = {
 export type JourneySummary = {
   id: string
   title: string
+  is_protected?: boolean
   start_date: string | null
   end_date: string | null
   updated_at: string
